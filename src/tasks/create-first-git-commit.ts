@@ -5,12 +5,12 @@ import { SOLIDITY_FRAMEWORKS } from "../utils/consts";
 import packageJson from "../../package.json";
 
 const foundryLibraries = ["foundry-rs/forge-std", "OpenZeppelin/openzeppelin-contracts", "gnsps/solidity-bytes-utils"];
-const createEthVersion = packageJson.version;
+const createHbarVersion = packageJson.version;
 
 export async function createFirstGitCommit(targetDir: string, options: Options) {
   try {
     await execa("git", ["add", "-A"], { cwd: targetDir });
-    await execa("git", ["commit", "-m", `Initial commit with 🏗️ create-eth @ ${createEthVersion}`, "--no-verify"], {
+    await execa("git", ["commit", "-m", `Initial commit with create-hbar @ ${createHbarVersion}`, "--no-verify"], {
       cwd: targetDir,
     });
 
