@@ -1,96 +1,197 @@
-# 🏗 create-eth
+# create-hbar
 
-CLI to create decentralized applications (dapps) using Scaffold-ETH 2.
+**Scaffold Hedera dApp projects from the command line.** Pick a template, frontend, Solidity framework, and wallet—then get a runnable project in one step.
 
-<h4 align="center">
-  <a href="https://docs.scaffoldeth.io">SE-2 Documentation</a> |
-  <a href="https://scaffoldeth.io">SE-2 Website</a>
-</h4>
+Create-hbar is an interactive CLI (like `create-next-app` or `create-react-app`) for the [Hedera](https://hedera.com) ecosystem. It generates a monorepo with contracts (Hardhat or Foundry), frontend (Next.js or Vite), and Hedera network configuration (testnet, mainnet, or local node) so you can start building on Hedera quickly.
 
-🧪 An open-source, up-to-date toolkit for building decentralized applications (dapps) on the Ethereum blockchain. It's designed to make it easier for developers to create and deploy smart contracts and build user interfaces that interact with those contracts.
+---
 
-> [!NOTE]
-> 🤖 Scaffold-ETH 2 is AI-ready! It has everything agents need to build on Ethereum. Check `.agents/`, `.claude/`, `.opencode` or `.cursor/` for more info.
+## Features
 
-⚙️ Built using NextJS, RainbowKit, Foundry/Hardhat, Wagmi, Viem, and Typescript.
+- **Starter templates** — Blank, HTS fungible, HTS NFT, HCS DAO, or DeFi swap
+- **Frontend options** — Next.js (App or Pages Router) or Vite + React
+- **Solidity** — Hardhat or Foundry (or contracts-only)
+- **Wallets** — WalletConnect v2 or MetaMask, wired for Hedera
+- **Networks** — Testnet, Mainnet, or local node (Hashio RPC + Mirror Node URLs)
+- **Non-interactive** — Use `--yes` or full flags for CI and scripts
 
-- ✅ **Contract Hot Reload**: Your frontend auto-adapts to your smart contract as you edit it.
-- 🪝 **[Custom hooks](https://docs.scaffoldeth.io/hooks/)**: Collection of React hooks wrapper around [wagmi](https://wagmi.sh/) to simplify interactions with smart contracts with typescript autocompletion.
-- 🧱 [**Components**](https://docs.scaffoldeth.io/components/): Collection of common web3 components to quickly build your frontend.
-- 🔥 **Burner Wallet & Local Faucet**: Quickly test your application with a burner wallet and local faucet.
-- 🔐 **Integration with Wallet Providers**: Connect to different wallet providers and interact with the Ethereum network.
+---
 
-![Debug Contracts tab](https://github.com/scaffold-eth/scaffold-eth-2/assets/55535804/b237af0c-5027-4849-a5c1-2e31495cccb1)
+## Prerequisites
 
-## Requirements
+- **Node.js** ≥ 20.18.3  
+  [nodejs.org](https://nodejs.org/)
+- **Git** (with `user.name` and `user.email` configured)  
+  [git-scm.com](https://git-scm.com/)
+- **Yarn**, **npm**, **pnpm**, or **bun** (one of them; the CLI can detect it)
 
-Before you begin, you need to install the following tools:
+If you choose **Foundry** as the Solidity framework, you need Foundry installed:
 
-- [Node (>= v20.18.3)](https://nodejs.org/en/download/)
-- Yarn ([v1](https://classic.yarnpkg.com/en/docs/install/) or [v2+](https://yarnpkg.com/getting-started/install))
-- [Git](https://git-scm.com/downloads)
+- **Official installer** (includes `forge` and `foundryup`):
+  ```bash
+  curl -L https://foundry.paradigm.xyz | bash
+  ```
+  Then restart your terminal and run:
+  ```bash
+  foundryup
+  ```
+- **Homebrew** (macOS):
+  ```bash
+  brew install foundry
+  ```
+  Update later with `brew upgrade foundry` (Homebrew does not install the `foundryup` command).
 
-## Quickstart
+If you choose **Hardhat** or **none**, no extra install is required.
 
-To get started with Scaffold-ETH 2, follow the steps below:
+---
 
-1. Install the latest version of Scaffold-ETH 2
+## Quick start (run from npm)
 
-```
-npx create-eth@latest
-```
+Create a new Hedera dApp without cloning this repo:
 
-This command will install all the necessary packages and dependencies, so it might take a while.
-
-> [!NOTE]
-> You can also initialize your project with one of our extensions to add specific features or starter-kits. Learn more in our [extensions documentation](https://docs.scaffoldeth.io/extensions/).
-
-2. Run a local network in the first terminal:
-
-```
-yarn chain
-```
-
-This command starts a local Ethereum network that runs on your local machine and can be used for testing and development. Learn how to [customize your network configuration](https://docs.scaffoldeth.io/quick-start/environment#1-initialize-a-local-blockchain).
-
-3. On a second terminal, deploy the test contract:
-
-```
-yarn deploy
+```bash
+npx create-hbar@latest
 ```
 
-This command deploys a test smart contract to the local network. You can find more information about how to customize your contract and deployment script in our [documentation](https://docs.scaffoldeth.io/quick-start/environment#2-deploy-your-smart-contract).
+You’ll get interactive prompts for project name, template, frontend, framework, wallet, network, and package manager. To accept all defaults and skip prompts:
 
-4. On a third terminal, start your NextJS app:
-
-```
-yarn start
+```bash
+npx create-hbar@latest --yes
 ```
 
-Visit your app on: `http://localhost:3000`. You can interact with your smart contract using the `Debug Contracts` page. You can tweak the app config in `packages/nextjs/scaffold.config.ts`.
+To skip installing dependencies (e.g. to install yourself later):
 
-**What's next**:
+```bash
+npx create-hbar@latest --yes --skip-install
+```
 
-Visit the [What's next section of our docs](https://docs.scaffoldeth.io/quick-start/environment#whats-next) to learn how to customize your contracts, frontend, and more.
+---
 
-## Documentation
+## Running locally (development)
 
-Visit our [docs](https://docs.scaffoldeth.io) to learn all the technical details and guides of Scaffold-ETH 2.
+Use this when you’re working on the create-hbar CLI itself.
 
-To know more about its features, check out our [website](https://scaffoldeth.io).
+### 1. Clone and install
 
-Watch [BG Labs](https://youtube.com/playlist?list=PLJz1HruEnenD77QAsqnk7KG8rSOMk0B99&si=JXZRn78_NBcvJJoZ) - our video series on building with Scaffold-ETH 2.
+```bash
+git clone https://github.com/hashgraph/create-hbar.git
+cd create-hbar
+yarn install
+```
 
-## Contributing
+### 2. Build
 
-Built by [BuidlGuidl](https://buidlguidl.com) builders, we welcome contributions to create-eth!
+The CLI runs from compiled output in `dist/`:
 
-For more information and guidelines for contributing, please see [CONTRIBUTING.MD](https://github.com/scaffold-eth/create-eth/blob/main/CONTRIBUTING.md)
+```bash
+yarn build
+```
 
-## Community
+### 3. Run the CLI
 
-<h4 align="center">
-  <a href="https://x.com/buidlguidl">Buidlguidl X</a> |
-  <a href="https://x.com/ScaffoldETH">SE-2 X</a> |
-  <a href="https://t.me/joinchat/F7nCRK3kI93PoCOk">SE-2 developers chat</a>
-</h4>
+From the repo root:
+
+```bash
+node bin/create-hbar.js [project-name] [options]
+```
+
+Or use the `cli` script:
+
+```bash
+yarn cli
+```
+
+**Examples (run from repo root):**
+
+```bash
+# Interactive: prompts for everything
+node bin/create-hbar.js --skip-install
+
+# Non-interactive: default project name, no install, no Foundry check
+node bin/create-hbar.js --yes --skip-install --solidity-framework none
+
+# Non-interactive with Hardhat
+node bin/create-hbar.js --yes --skip-install --solidity-framework hardhat
+
+# Custom project name and template
+node bin/create-hbar.js my-hts-app --template hts-nft --frontend vite-react --skip-install
+
+# See all options
+node bin/create-hbar.js --help
+```
+
+To avoid creating the project inside the repo, run from another directory:
+
+```bash
+cd /tmp
+node /path/to/create-hbar/bin/create-hbar.js --yes --skip-install my-hedera-dapp
+```
+
+---
+
+## CLI options
+
+| Option                                                     | Description                                                                      |
+| ---------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| `[project-name]`                                           | Project directory name (or use `--destination`)                                  |
+| `-d, --destination <path>`                                 | Output path instead of positional name                                           |
+| `-t, --template <key>`                                     | `blank` \| `hts-fungible` \| `hts-nft` \| `hcs-dao` \| `defi-swap` or `org/repo` |
+| `-f, --frontend <fw>`                                      | `nextjs-app` \| `nextjs-pages` \| `vite-react` \| `none`                         |
+| `-s, --solidity-framework <fw>`                            | `foundry` \| `hardhat` \| `none`                                                 |
+| `-w, --wallet <list>`                                      | Comma-separated: `walletconnect`, `metamask`                                     |
+| `--network <network>`                                      | `testnet` \| `mainnet` \| `local`                                                |
+| `--use-npm` \| `--use-pnpm` \| `--use-yarn` \| `--use-bun` | Force package manager                                                            |
+| `--skip-install`                                           | Don’t run install after scaffolding                                              |
+| `-y, --yes`                                                | Use defaults for all prompts (non-interactive)                                   |
+| `--ci`                                                     | CI mode (implies `--yes`, structured output)                                     |
+| `-e, --extension <name>`                                   | Community extension (e.g. `owner/repo`)                                          |
+| `--dev`                                                    | Dev mode: use local `externalExtensions/` symlinks                               |
+| `-h, --help`                                               | Show help                                                                        |
+| `-v, --version`                                            | Show version                                                                     |
+
+---
+
+## Development (contributing)
+
+- **Typecheck:** `yarn type-check`
+- **Lint:** `yarn lint`
+- **Format:** `yarn format`
+- **Tests:** `yarn test`
+- **Tests (watch):** `yarn test:watch`
+- **Coverage:** `yarn test:coverage`
+
+Pre-commit hooks (lefthook) run format, type-check, and lint.
+
+---
+
+## Project structure
+
+```
+create-hbar/
+├── bin/create-hbar.js    # CLI entry (points to dist/)
+├── src/
+│   ├── cli.ts            # Main CLI flow
+│   ├── main.ts           # createProject task list
+│   ├── types.ts          # Shared types
+│   ├── utils/            # Prompts, parsing, validation, intro/outro
+│   └── tasks/            # Copy template, install, git, format
+├── templates/            # Base + solidity-frameworks (hardhat, foundry)
+├── tests/
+│   ├── unit/             # Unit tests (consts, types, parse-arguments)
+│   └── integration/      # Integration tests (prompts)
+└── dist/                 # Built output (generated by yarn build)
+```
+
+---
+
+## Links
+
+- [Hedera Developer Portal](https://docs.hedera.com/)
+- [Hedera Documentation](https://docs.hedera.com/hedera/core-concepts/)
+- [Get testnet HBAR](https://portal.hedera.com/)
+
+---
+
+## License
+
+MIT
