@@ -1,7 +1,11 @@
-import type { Options } from "ncp";
 import { existsSync, lstatSync, readdirSync, readlinkSync } from "fs";
 import { promises } from "fs";
 import path from "path";
+
+type Options = {
+  filter?: ((source: string) => boolean) | RegExp;
+  clobber?: boolean;
+};
 
 const { mkdir, link, symlink } = promises;
 
