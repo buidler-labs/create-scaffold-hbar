@@ -22,7 +22,6 @@ export type SolidityFramework = "hardhat" | "foundry";
 /** Wallet connector choices for the generated frontend. */
 export type Wallet = "walletconnect" | "metamask";
 
-
 /** Dev-mode extension name (a local directory name under externalExtensions/). */
 export type ExternalExtensionNameDev = string;
 
@@ -105,7 +104,7 @@ type BaseOptions = {
   /** Solidity / contract framework. `"none"` means contracts-only with no framework. */
   solidityFramework: SolidityFramework | "none" | null;
   /** Starter template key or `"org/repo"` community template path. */
-  template: Template | string | null;
+  template: (Template | (string & {})) | null;
   /** Frontend framework. `"none"` hides wallet prompts and produces a contracts-only scaffold. */
   frontend: Frontend | null;
   /** Selected wallet connector(s). Empty array is valid when frontend is `"none"`. */
@@ -135,13 +134,12 @@ export type Options = {
 } & {
   externalExtension: RawOptions["externalExtension"];
   solidityFramework: SolidityFramework | null;
-  template: Template | string;
+  template: Template | (string & {});
   frontend: Frontend;
   wallet: Wallet[];
   network: Network;
   packageManager: PackageManager;
 };
-
 
 /** Describes a single `.template.` file found during template processing. */
 export type TemplateDescriptor = {

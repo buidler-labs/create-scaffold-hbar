@@ -26,7 +26,7 @@ import { validateNpmName } from "./validate-name";
 import packageJson from "../../package.json";
 import { execa } from "execa";
 import * as p from "@clack/prompts";
-import { existsSync } from "fs";
+import * as fs from "fs";
 
 // ─── Valid enum values derived from consts (single source of truth) ───────────
 // Extracting .value from each option array means adding a new entry to consts.ts
@@ -80,9 +80,9 @@ export function detectPackageManager(): PackageManager {
   if (agent.startsWith("npm")) return "npm";
 
   // Lockfile detection as secondary signal
-  if (existsSync("pnpm-lock.yaml")) return "pnpm";
-  if (existsSync("yarn.lock")) return "yarn";
-  if (existsSync("bun.lockb")) return "bun";
+  if (fs.existsSync("pnpm-lock.yaml")) return "pnpm";
+  if (fs.existsSync("yarn.lock")) return "yarn";
+  if (fs.existsSync("bun.lockb")) return "bun";
 
   return "npm";
 }
