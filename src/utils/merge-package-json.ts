@@ -1,5 +1,7 @@
-import mergeJsonStr from "merge-packages";
+import deepmerge from "@fastify/deepmerge";
 import fs from "fs";
+
+const merge = deepmerge({ all: true });
 
 export function mergePackageJson(targetPackageJsonPath: string, secondPackageJsonPath: string, isDev: boolean) {
   const existsTarget = fs.existsSync(targetPackageJsonPath);
@@ -8,13 +10,11 @@ export function mergePackageJson(targetPackageJsonPath: string, secondPackageJso
     return;
   }
 
-  const targetPackageJson = existsTarget ? fs.readFileSync(targetPackageJsonPath, "utf8") : "{}";
+  const targetPkg = existsTarget ? (JSON.parse(fs.readFileSync(targetPackageJsonPath, "utf8")) as object) : {};
+  const secondPkg = existsSecond ? (JSON.parse(fs.readFileSync(secondPackageJsonPath, "utf8")) as object) : {};
 
-  const secondPackageJson = existsSecond ? fs.readFileSync(secondPackageJsonPath, "utf8") : "{}";
-
-  const mergedPkgStr = mergeJsonStr.default(targetPackageJson, secondPackageJson);
-
-  const formattedPkgStr = JSON.stringify(JSON.parse(mergedPkgStr), null, 2);
+  const merged = merge(targetPkg, secondPkg);
+  const formattedPkgStr = JSON.stringify(merged, null, 2);
 
   fs.writeFileSync(targetPackageJsonPath, formattedPkgStr, "utf8");
   if (isDev) {

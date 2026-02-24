@@ -373,8 +373,10 @@ export async function copyTemplateFiles(options: Options, templateDir: string, t
     await copyExtensionFiles(options, solidityFrameworkPath, targetDir);
   }
 
-  const exampleContractsPath =
+  const resolvedExampleContracts =
     options.solidityFramework && path.resolve(templateDir, EXAMPLE_CONTRACTS_DIR, options.solidityFramework);
+  const exampleContractsPath =
+    resolvedExampleContracts && fs.existsSync(resolvedExampleContracts) ? resolvedExampleContracts : null;
 
   // 3. Set up external extension if needed
   if (options.externalExtension) {
