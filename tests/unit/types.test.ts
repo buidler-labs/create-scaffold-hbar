@@ -23,7 +23,7 @@ const fullManifest = {
     envVars: [
       { key: "HEDERA_ACCOUNT_ID", description: "Your Hedera account ID (0.0.XXXXX)" },
       { key: "HEDERA_PRIVATE_KEY", description: "Your ECDSA or ED25519 private key" },
-      { key: "HEDERA_NETWORK", description: "testnet | mainnet | local" },
+      { key: "HEDERA_NETWORK", description: "testnet | mainnet" },
     ],
   },
 };

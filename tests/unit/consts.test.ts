@@ -43,24 +43,12 @@ describe("HEDERA_NETWORKS", () => {
     expect(HEDERA_NETWORKS.mainnet.chainId).toBe(295);
   });
 
-  it("local has chain ID 298", () => {
-    expect(HEDERA_NETWORKS.local.chainId).toBe(298);
-  });
-
   it("testnet RPC URL points to Hashio testnet relay", () => {
     expect(HEDERA_NETWORKS.testnet.rpcUrl).toBe("https://testnet.hashio.io/api");
   });
 
   it("mainnet RPC URL points to Hashio mainnet relay", () => {
     expect(HEDERA_NETWORKS.mainnet.rpcUrl).toBe("https://mainnet.hashio.io/api");
-  });
-
-  it("local RPC URL points to localhost JSON-RPC port", () => {
-    expect(HEDERA_NETWORKS.local.rpcUrl).toBe("http://localhost:7546");
-  });
-
-  it("local mirror URL points to localhost mirror port", () => {
-    expect(HEDERA_NETWORKS.local.mirrorUrl).toBe("http://localhost:5551/api/v1");
   });
 });
 
@@ -116,12 +104,9 @@ describe("TEMPLATES", () => {
 });
 
 describe("FRONTENDS", () => {
-  it("includes nextjs-app as the first option", () => {
+  it("only includes nextjs-app", () => {
+    expect(FRONTENDS).toHaveLength(1);
     expect(FRONTENDS[0].value).toBe("nextjs-app");
-  });
-
-  it("includes the none option for contracts-only scaffolds", () => {
-    expect(FRONTENDS.map(f => f.value)).toContain("none");
   });
 });
 
@@ -137,26 +122,19 @@ describe("SOLIDITY_FRAMEWORK_OPTIONS", () => {
 });
 
 describe("WALLETS", () => {
-  it("does not include hashconnect (deprecated as of 2026)", () => {
-    expect(WALLETS.map(w => w.value)).not.toContain("hashconnect");
-  });
-
-  it("includes walletconnect as the first option", () => {
+  it("only includes walletconnect", () => {
+    expect(WALLETS).toHaveLength(1);
     expect(WALLETS[0].value).toBe("walletconnect");
   });
 
-  it("includes metamask", () => {
-    expect(WALLETS.map(w => w.value)).toContain("metamask");
+  it("does not include hashconnect (deprecated)", () => {
+    expect(WALLETS.map(w => w.value)).not.toContain("hashconnect");
   });
 });
 
 describe("NETWORKS", () => {
-  it("lists testnet first", () => {
-    expect(NETWORKS[0].value).toBe("testnet");
-  });
-
-  it("includes local node option", () => {
-    expect(NETWORKS.map(n => n.value)).toContain("local");
+  it("only includes testnet and mainnet", () => {
+    expect(NETWORKS.map(n => n.value)).toEqual(["testnet", "mainnet"]);
   });
 });
 

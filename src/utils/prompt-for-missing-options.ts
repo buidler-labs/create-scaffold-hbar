@@ -63,10 +63,8 @@ export async function promptForMissingOptions(rawOptions: RawOptions): Promise<O
         });
       },
 
-      wallet: ({ results }) => {
+      wallet: () => {
         if (rawOptions.wallet != null) return Promise.resolve(rawOptions.wallet);
-        const chosenFrontend = results.frontend ?? rawOptions.frontend;
-        if (chosenFrontend === "none") return Promise.resolve([] as Wallet[]);
         return p.multiselect({
           message: "Which wallet connector(s)?",
           options: WALLETS.map(w => ({ value: w.value, label: w.label, hint: w.hint })),
@@ -95,7 +93,9 @@ export async function promptForMissingOptions(rawOptions: RawOptions): Promise<O
       },
 
       install: () => {
-        if (!rawOptions.install) return Promise.resolve(rawOptions.install);
+        // Skip prompt when already set by --skip-install or --yes
+        if (rawOptions.install === false) return Promise.resolve(false);
+        if (rawOptions.install === true) return Promise.resolve(true);
         return p.confirm({
           message: "Install dependencies after scaffolding?",
           initialValue: DEFAULT_OPTIONS.install,
@@ -117,7 +117,7 @@ export async function promptForMissingOptions(rawOptions: RawOptions): Promise<O
     project: answers.project,
     template: answers.template as string,
     frontend: answers.frontend as Frontend,
-    wallet: answers.wallet as Wallet[],
+    wallet: answers.wallet,
     network: answers.network as Network,
     packageManager: answers.packageManager as PackageManager,
     install: Boolean(answers.install),

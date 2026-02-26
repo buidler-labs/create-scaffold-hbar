@@ -110,17 +110,17 @@ Contract data is read from two files in \`packages/nextjs/contracts/\`:
 
 #### Reading Contract Data
 
-\`\`\`typescript
+\\\`\\\`\\\`typescript
 const { data: totalCounter } = useScaffoldReadContract({
   contractName: "YourContract",
   functionName: "userGreetingCounter",
   args: ["0xd8da6bf26964af9d7eed9e03e53415d37aa96045"],
 });
-\`\`\`
+\\\`\\\`\\\`
 
 #### Writing to Contracts
 
-\`\`\`typescript
+\\\`\\\`\\\`typescript
 const { writeContractAsync, isPending } = useScaffoldWriteContract({
   contractName: "YourContract",
 });
@@ -130,11 +130,11 @@ await writeContractAsync({
   args: [newGreeting],
   value: parseEther("0.01"), // for payable functions
 });
-\`\`\`
+\\\`\\\`\\\`
 
 #### Reading Events
 
-\`\`\`typescript
+\\\`\\\`\\\`typescript
 const { data: events, isLoading } = useScaffoldEventHistory({
   contractName: "YourContract",
   eventName: "GreetingChange",
@@ -142,7 +142,7 @@ const { data: events, isLoading } = useScaffoldEventHistory({
   fromBlock: 31231n,
   blockData: true,
 });
-\`\`\`
+\\\`\\\`\\\`
 
 SE-2 also provides other hooks to interact with blockchain data: \`useScaffoldWatchContractEvent\`, \`useScaffoldEventHistory\`, \`useDeployedContractInfo\`, \`useScaffoldContract\`, \`useTransactor\`.
 
@@ -162,14 +162,14 @@ SE-2 also provides other hooks to interact with blockchain data: \`useScaffoldWa
 
 **Use DaisyUI classes** for building frontend components.
 
-\`\`\`tsx
+\\\`\\\`\\\`tsx
 // ✅ Good - using DaisyUI classes
 <button className="btn btn-primary">Connect</button>
 <div className="card bg-base-100 shadow-xl">...</div>
 
 // ❌ Avoid - raw Tailwind when DaisyUI has a component
 <button className="px-4 py-2 bg-blue-500 text-white rounded">Connect</button>
-\`\`\`
+\\\`\\\`\\\`
 
 ### Configure Target Network before deploying to testnet / mainnet.
 
@@ -200,13 +200,13 @@ Add networks in \`packages/nextjs/scaffold.config.ts\` if not present. This file
 
 Use the \`~~\` path alias for imports in the nextjs package:
 
-\`\`\`tsx
+\\\`\\\`\\\`tsx
 import { useTargetNetwork } from "~~/hooks/scaffold-eth";
-\`\`\`
+\\\`\\\`\\\`
 
 ### Creating Pages
 
-\`\`\`tsx
+\\\`\\\`\\\`tsx
 import type { NextPage } from "next";
 
 const Home: NextPage = () => {
@@ -214,7 +214,7 @@ const Home: NextPage = () => {
 };
 
 export default Home;
-\`\`\`
+\\\`\\\`\\\`
 
 ### TypeScript Conventions
 

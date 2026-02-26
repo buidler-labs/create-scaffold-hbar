@@ -33,13 +33,8 @@ export const TEMPLATES = [
   { value: "defi-swap", label: "DeFi Swap", hint: "AMM-style token exchange" },
 ] as const;
 
-/** Frontend framework options shown in the interactive select prompt. */
-export const FRONTENDS = [
-  { value: "nextjs-app", label: "Next.js (App Router)" },
-  { value: "nextjs-pages", label: "Next.js (Pages Router)" },
-  { value: "vite-react", label: "Vite + React" },
-  { value: "none", label: "None (contracts only)" },
-] as const;
+/** Frontend framework (Next.js only). */
+export const FRONTENDS = [{ value: "nextjs-app", label: "Next.js (App Router)" }] as const;
 
 /**
  * Solidity framework options for the interactive prompt.
@@ -52,17 +47,15 @@ export const SOLIDITY_FRAMEWORK_OPTIONS = [
   { value: "none", label: "None" },
 ] as const;
 
-/** Wallet connector options. HashConnect is excluded — it is deprecated as of 2026. */
+/** Wallet connector (WalletConnect only). */
 export const WALLETS = [
   { value: "walletconnect", label: "WalletConnect v2", hint: "via @hashgraph/hedera-wallet-connect" },
-  { value: "metamask", label: "MetaMask (EVM)", hint: "via Hedera JSON-RPC Relay (Hashio)" },
 ] as const;
 
-/** Target Hedera network options. */
+/** Target Hedera network options (testnet and mainnet only). */
 export const NETWORKS = [
   { value: "testnet", label: "Testnet", hint: "free testnet HBAR at portal.hedera.com" },
   { value: "mainnet", label: "Mainnet" },
-  { value: "local", label: "Local Node", hint: "requires Docker + @hashgraph/hedera-local" },
 ] as const;
 
 /** Package manager options shown when auto-detection is ambiguous. */
@@ -125,10 +118,5 @@ export const HEDERA_NETWORKS = {
     chainId: 295,
     rpcUrl: "https://mainnet.hashio.io/api",
     mirrorUrl: "https://mainnet-public.mirrornode.hedera.com/api/v1",
-  },
-  local: {
-    chainId: 298,
-    rpcUrl: "http://localhost:7546",
-    mirrorUrl: "http://localhost:5551/api/v1",
   },
 } as const;

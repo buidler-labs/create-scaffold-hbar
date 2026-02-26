@@ -6,21 +6,21 @@ export type Args = string[];
 export type PackageManager = "npm" | "pnpm" | "yarn" | "bun";
 
 /** Hedera network targets. */
-export type Network = "testnet" | "mainnet" | "local";
+export type Network = "testnet" | "mainnet";
 
 /** Built-in starter templates. Also accepts `"org/repo"` strings for community templates. */
 export type Template = "blank" | "hts-fungible" | "hts-nft" | "hcs-dao" | "defi-swap";
 
-/** Frontend framework choices for the generated project. */
-export type Frontend = "nextjs-app" | "nextjs-pages" | "vite-react" | "none";
+/** Frontend framework (Next.js only). */
+export type Frontend = "nextjs-app";
 
 /**
  * Solidity / contract framework choices.
  */
 export type SolidityFramework = "hardhat" | "foundry";
 
-/** Wallet connector choices for the generated frontend. */
-export type Wallet = "walletconnect" | "metamask";
+/** Wallet connector (WalletConnect only). */
+export type Wallet = "walletconnect";
 
 /** Dev-mode extension name (a local directory name under externalExtensions/). */
 export type ExternalExtensionNameDev = string;
@@ -105,9 +105,9 @@ type BaseOptions = {
   solidityFramework: SolidityFramework | "none" | null;
   /** Starter template key or `"org/repo"` community template path. */
   template: (Template | (string & {})) | null;
-  /** Frontend framework. `"none"` hides wallet prompts and produces a contracts-only scaffold. */
+  /** Frontend framework (Next.js). */
   frontend: Frontend | null;
-  /** Selected wallet connector(s). Empty array is valid when frontend is `"none"`. */
+  /** Selected wallet connector(s). */
   wallet: Wallet[] | null;
   /** Target Hedera network. */
   network: Network | null;

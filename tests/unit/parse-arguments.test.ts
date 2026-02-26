@@ -1,5 +1,4 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { tmpdir } from "os";
 import { EXIT_CODES, DEFAULT_OPTIONS } from "../../src/utils/consts";
 
 // ─── Mock external I/O dependencies ──────────────────────────────────────────
@@ -22,9 +21,7 @@ vi.mock("@clack/prompts", () => ({
 }));
 
 // Import the module under test AFTER mocks are set up
-const { parseArgumentsIntoOptions, detectPackageManager } = await import(
-  "../../src/utils/parse-arguments-into-options"
-);
+const { parseArgumentsIntoOptions } = await import("../../src/utils/parse-arguments-into-options");
 
 /** Wraps raw string args the same way process.argv works (node + script prefix). */
 const args = (...flags: string[]) => ["node", "create-hbar", ...flags];
@@ -114,11 +111,6 @@ describe("parseArgumentsIntoOptions", () => {
       expect(rawOptions.frontend).toBe("nextjs-app");
     });
 
-    it("accepts none", async () => {
-      const { rawOptions } = await parseArgumentsIntoOptions(args("--frontend", "none"));
-      expect(rawOptions.frontend).toBe("none");
-    });
-
     it("exits BAD_ARGS on invalid frontend value", async () => {
       await expect(parseArgumentsIntoOptions(args("--frontend", "react-native"))).rejects.toThrow(
         `process.exit(${EXIT_CODES.BAD_ARGS})`,
@@ -155,11 +147,6 @@ describe("parseArgumentsIntoOptions", () => {
       expect(rawOptions.wallet).toEqual(["walletconnect"]);
     });
 
-    it("parses comma-separated wallet values", async () => {
-      const { rawOptions } = await parseArgumentsIntoOptions(args("-w", "walletconnect,metamask"));
-      expect(rawOptions.wallet).toEqual(["walletconnect", "metamask"]);
-    });
-
     it("exits BAD_ARGS on invalid wallet value", async () => {
       await expect(parseArgumentsIntoOptions(args("--wallet", "hashconnect"))).rejects.toThrow(
         `process.exit(${EXIT_CODES.BAD_ARGS})`,
@@ -173,12 +160,18 @@ describe("parseArgumentsIntoOptions", () => {
       expect(rawOptions.network).toBe("testnet");
     });
 
-    it("accepts local", async () => {
-      const { rawOptions } = await parseArgumentsIntoOptions(args("--network", "local"));
-      expect(rawOptions.network).toBe("local");
+    it("accepts mainnet", async () => {
+      const { rawOptions } = await parseArgumentsIntoOptions(args("--network", "mainnet"));
+      expect(rawOptions.network).toBe("mainnet");
     });
 
-    it("exits BAD_ARGS on invalid network", async () => {
+    it("exits BAD_ARGS on invalid network (e.g. local)", async () => {
+      await expect(parseArgumentsIntoOptions(args("--network", "local"))).rejects.toThrow(
+        `process.exit(${EXIT_CODES.BAD_ARGS})`,
+      );
+    });
+
+    it("exits BAD_ARGS on unknown network value", async () => {
       await expect(parseArgumentsIntoOptions(args("--network", "ropsten"))).rejects.toThrow(
         `process.exit(${EXIT_CODES.BAD_ARGS})`,
       );
@@ -291,51 +284,5 @@ describe("parseArgumentsIntoOptions", () => {
       const { solidityFrameworkChoices } = await parseArgumentsIntoOptions(args());
       expect(solidityFrameworkChoices).toHaveLength(3);
     });
-  });
-});
-
-describe("detectPackageManager", () => {
-  const originalAgent = process.env.npm_config_user_agent;
-
-  afterEach(() => {
-    if (originalAgent === undefined) {
-      delete process.env.npm_config_user_agent;
-    } else {
-      process.env.npm_config_user_agent = originalAgent;
-    }
-  });
-
-  it("returns pnpm when user agent starts with pnpm", () => {
-    process.env.npm_config_user_agent = "pnpm/8.0.0 npm/? node/v20.0.0";
-    expect(detectPackageManager()).toBe("pnpm");
-  });
-
-  it("returns yarn when user agent starts with yarn", () => {
-    process.env.npm_config_user_agent = "yarn/3.5.0 npm/? node/v20.0.0";
-    expect(detectPackageManager()).toBe("yarn");
-  });
-
-  it("returns bun when user agent starts with bun", () => {
-    process.env.npm_config_user_agent = "bun/1.0.0 node/v20.0.0";
-    expect(detectPackageManager()).toBe("bun");
-  });
-
-  it("returns npm when user agent starts with npm", () => {
-    process.env.npm_config_user_agent = "npm/10.0.0 node/v20.0.0";
-    expect(detectPackageManager()).toBe("npm");
-  });
-
-  it("falls back to npm when user agent is absent and no lockfiles", () => {
-    delete process.env.npm_config_user_agent;
-    // Run from a temp directory that contains no lockfiles so the
-    // existsSync lockfile probes all return false.
-    const originalCwd = process.cwd();
-    const tmpDir = tmpdir();
-    process.chdir(tmpDir);
-    try {
-      expect(detectPackageManager()).toBe("npm");
-    } finally {
-      process.chdir(originalCwd);
-    }
   });
 });

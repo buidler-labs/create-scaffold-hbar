@@ -104,8 +104,8 @@ describe("promptForMissingOptions", () => {
   });
 
   it("skips wallet prompt when wallet is pre-supplied", async () => {
-    const result = await promptForMissingOptions(makeRawOptions({ wallet: ["metamask"] }));
-    expect(result.wallet).toEqual(["metamask"]);
+    const result = await promptForMissingOptions(makeRawOptions({ wallet: ["walletconnect"] }));
+    expect(result.wallet).toEqual(["walletconnect"]);
   });
 
   it("skips network prompt when network is pre-supplied", async () => {
@@ -156,18 +156,10 @@ describe("promptForMissingOptions", () => {
     expect(result.solidityFramework).toBe("foundry");
   });
 
-  // ── Wallet auto-skip when frontend is "none" ────────────────────────────
-
-  it("returns empty wallet array when frontend is none (no prompt shown)", async () => {
-    const result = await promptForMissingOptions(makeRawOptions({ frontend: "none" }));
-    expect(result.wallet).toEqual([]);
-    expect(mockMultiselect).not.toHaveBeenCalled();
-  });
-
-  it("prompts for wallet when frontend is not none", async () => {
-    mockMultiselect.mockResolvedValue(["walletconnect", "metamask"] as Wallet[]);
+  it("prompts for wallet when not pre-supplied", async () => {
+    mockMultiselect.mockResolvedValue(["walletconnect"] as Wallet[]);
     const result = await promptForMissingOptions(makeRawOptions({ frontend: "nextjs-app" }));
-    expect(result.wallet).toEqual(["walletconnect", "metamask"]);
+    expect(result.wallet).toEqual(["walletconnect"]);
     expect(mockMultiselect).toHaveBeenCalledTimes(1);
   });
 
@@ -217,10 +209,10 @@ describe("promptForMissingOptions", () => {
     const raw = makeRawOptions({
       project: "full-project",
       template: "defi-swap",
-      frontend: "vite-react",
+      frontend: "nextjs-app",
       solidityFramework: "foundry",
-      wallet: ["walletconnect", "metamask"],
-      network: "local",
+      wallet: ["walletconnect"],
+      network: "mainnet",
       packageManager: "bun",
       install: false,
       dev: true,
@@ -231,10 +223,10 @@ describe("promptForMissingOptions", () => {
     expect(result).toEqual({
       project: "full-project",
       template: "defi-swap",
-      frontend: "vite-react",
+      frontend: "nextjs-app",
       solidityFramework: "foundry",
-      wallet: ["walletconnect", "metamask"],
-      network: "local",
+      wallet: ["walletconnect"],
+      network: "mainnet",
       packageManager: "bun",
       install: false,
       dev: true,

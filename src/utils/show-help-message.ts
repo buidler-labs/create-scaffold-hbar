@@ -15,13 +15,13 @@ export const showHelpMessage = () => {
     ${chalk.gray("-t, --template <template>")}       Starter template key or GitHub org/repo
                                        ${chalk.dim("blank | hts-fungible | hts-nft | hcs-dao | defi-swap | org/repo")}
     ${chalk.gray("-f, --frontend <framework>")}      Frontend framework
-                                       ${chalk.dim("nextjs-app | nextjs-pages | vite-react | none")}
+                                       ${chalk.dim("nextjs-app")}
     ${chalk.gray("-s, --solidity-framework <fw>")}   Solidity / contract framework
                                        ${chalk.dim("foundry | hardhat | none")}
-    ${chalk.gray("-w, --wallet <wallets>")}          Wallet connector(s), comma-separated
-                                       ${chalk.dim("walletconnect | metamask")}
+    ${chalk.gray("-w, --wallet <wallets>")}          Wallet connector
+                                       ${chalk.dim("walletconnect")}
     ${chalk.gray("--network <network>")}             Target Hedera network
-                                       ${chalk.dim("testnet | mainnet | local")}
+                                       ${chalk.dim("testnet | mainnet")}
     ${chalk.gray("--use-npm")}                       Use npm as package manager
     ${chalk.gray("-p, --use-pnpm")}                  Use pnpm as package manager
     ${chalk.gray("--use-yarn")}                      Use yarn as package manager
@@ -43,7 +43,7 @@ export const showHelpMessage = () => {
     ${chalk.green("npx create-hbar@latest my-dapp --template hts-nft --frontend nextjs-app --use-pnpm --yes")}
 
     ${chalk.dim("# CI pipeline")}
-    ${chalk.green("npx create-hbar@latest my-dapp --template blank --frontend none --skip-install --ci")}
+    ${chalk.green("npx create-hbar@latest my-dapp --template blank --frontend nextjs-app --skip-install --ci")}
 
     ${chalk.dim("# Community template")}
     ${chalk.green("npx create-hbar@latest my-dapp --template my-org/my-hedera-template --yes")}

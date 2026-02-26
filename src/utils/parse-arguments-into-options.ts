@@ -23,10 +23,10 @@ import {
   PACKAGE_MANAGERS,
 } from "./consts";
 import { validateNpmName } from "./validate-name";
+import { detectPackageManager } from "./detect-pm";
 import packageJson from "../../package.json";
 import { execa } from "execa";
 import * as p from "@clack/prompts";
-import * as fs from "fs";
 
 // ─── Valid enum values derived from consts (single source of truth) ───────────
 // Extracting .value from each option array means adding a new entry to consts.ts
@@ -67,25 +67,7 @@ function validateEnum<T extends string>(value: string, allowed: readonly T[], fl
   return lower;
 }
 
-/**
- * Detects the package manager from the npm_config_user_agent env var (set
- * automatically when using `npm/pnpm/yarn/bun create`) or from lockfiles in cwd.
- * Falls back to "npm".
- */
-export function detectPackageManager(): PackageManager {
-  const agent = process.env.npm_config_user_agent ?? "";
-  if (agent.startsWith("pnpm")) return "pnpm";
-  if (agent.startsWith("yarn")) return "yarn";
-  if (agent.startsWith("bun")) return "bun";
-  if (agent.startsWith("npm")) return "npm";
-
-  // Lockfile detection as secondary signal
-  if (fs.existsSync("pnpm-lock.yaml")) return "pnpm";
-  if (fs.existsSync("yarn.lock")) return "yarn";
-  if (fs.existsSync("bun.lockb")) return "bun";
-
-  return "npm";
-}
+export { detectPackageManager } from "./detect-pm";
 
 /**
  * Parses CLI arguments using commander and returns raw (pre-prompt) options.
@@ -104,10 +86,10 @@ export async function parseArgumentsIntoOptions(
     .argument("[project-name]", "Name / path of the project directory to create")
     .option("-d, --destination <path>", "Output directory (alternative to positional arg)")
     .option("-t, --template <template>", "Starter template key or GitHub org/repo")
-    .option("-f, --frontend <framework>", "Frontend framework (nextjs-app|nextjs-pages|vite-react|none)")
+    .option("-f, --frontend <framework>", "Frontend framework (nextjs-app)")
     .option("-s, --solidity-framework <fw>", "Solidity framework (foundry|hardhat|none)")
     .option("-w, --wallet <wallets>", "Wallet connector(s), comma-separated (walletconnect,metamask)")
-    .option("--network <network>", "Target network (testnet|mainnet|local)")
+    .option("--network <network>", "Target network (testnet|mainnet)")
     .option("--use-npm", "Use npm as package manager")
     .option("-p, --use-pnpm", "Use pnpm as package manager")
     .option("--use-yarn", "Use yarn as package manager")
