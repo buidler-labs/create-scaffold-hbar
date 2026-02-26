@@ -1,8 +1,10 @@
 import { execa } from "execa";
-import { ExternalExtension, Options, SolidityFramework, TemplateDescriptor } from "../types";
+import { downloadTemplate } from "giget";
+import { ExternalExtension, Options, SolidityFramework, TemplateDescriptor, TemplateManifestSchema } from "../types";
 import { findFilesRecursiveSync } from "../utils/find-files-recursively";
 import { mergePackageJson } from "../utils/merge-package-json";
 import fs from "fs";
+import os from "os";
 import { pathToFileURL } from "url";
 import fse from "fs-extra";
 import path from "path";
@@ -15,6 +17,8 @@ import {
   EXAMPLE_CONTRACTS_DIR,
   GLOBAL_ARGS_DEFAULTS,
 } from "../utils/consts";
+import { applyRenameMap } from "./apply-rename-map";
+import { generateEnvExample } from "./generate-env-example";
 
 const EXTERNAL_EXTENSION_TMP_DIR = "tmp-external-extension";
 
@@ -358,7 +362,53 @@ const setUpExternalExtensionFiles = async (options: Options, tmpDir: string) => 
   }
 };
 
+const TEMPLATE_MANIFEST_FILENAME = "template.json";
+
+/**
+ * If template.json exists in project root, parse it, run rename and env
+ * generation, then remove the manifest file.
+ */
+function processTemplateManifest(projectDir: string, projectName: string): void {
+  const manifestPath = path.join(projectDir, TEMPLATE_MANIFEST_FILENAME);
+  if (!fs.existsSync(manifestPath)) return;
+
+  const raw = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
+  const manifest = TemplateManifestSchema.parse(raw);
+  const createHbar = manifest["create-hbar"];
+
+  if (createHbar?.rename) {
+    applyRenameMap(projectDir, createHbar.rename, projectName);
+  }
+  if (createHbar?.envVars?.length) {
+    generateEnvExample(projectDir, createHbar.envVars);
+  }
+
+  fs.unlinkSync(manifestPath);
+}
+
 export async function copyTemplateFiles(options: Options, templateDir: string, targetDir: string) {
+  const template = options.template as string;
+  const isCommunityTemplate = template.includes("/");
+
+  if (isCommunityTemplate) {
+    const tmpDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), "create-hbar-"));
+    try {
+      await downloadTemplate(`gh:${template}`, { dir: tmpDir });
+      const entries = fs.readdirSync(tmpDir, { withFileTypes: true });
+      for (const entry of entries) {
+        const src = path.join(tmpDir, entry.name);
+        const dest = path.join(targetDir, entry.name);
+        await fse.copy(src, dest, { overwrite: true });
+      }
+    } finally {
+      await fs.promises.rm(tmpDir, { recursive: true, force: true });
+    }
+    processTemplateManifest(targetDir, options.project);
+    await execa("git", ["init"], { cwd: targetDir });
+    await execa("git", ["checkout", "-b", "main"], { cwd: targetDir });
+    return;
+  }
+
   copyOrLink = options.dev ? link : copy;
   const basePath = path.join(templateDir, BASE_DIR);
   const tmpDir = path.join(targetDir, EXTERNAL_EXTENSION_TMP_DIR);
@@ -430,4 +480,7 @@ export async function copyTemplateFiles(options: Options, templateDir: string, t
   // 6. Initialize git repo to avoid husky error
   await execa("git", ["init"], { cwd: targetDir });
   await execa("git", ["checkout", "-b", "main"], { cwd: targetDir });
+
+  // 7. Process template.json manifest if present (rename + .env.example)
+  processTemplateManifest(targetDir, options.project);
 }
