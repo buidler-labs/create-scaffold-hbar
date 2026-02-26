@@ -11,3 +11,6 @@ templates
 
 # External extensions development folder
 externalExtensions
+
+# Generated scaffold output
+my-hedera-dapp

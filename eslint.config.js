@@ -44,7 +44,7 @@ export default tseslint.config(
     ...tseslint.configs.disableTypeChecked,
   },
   {
-    ignores: [".changeset", ".yarn", "bin", "dist", "templates", "externalExtensions"],
+    ignores: [".changeset", ".yarn", "bin", "dist", "templates", "externalExtensions", "my-hedera-dapp"],
   },
   eslintPluginPrettierRecommended,
   {
