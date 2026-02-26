@@ -36,8 +36,8 @@ export async function createProject(options: Options) {
         task: () => copyTemplateFiles(options, templateDirectory, targetDirectory),
       },
       {
-        title: "📦 Installing dependencies with yarn, this could take a while",
-        task: (_, task) => installPackages(targetDirectory, task),
+        title: `📦 Installing dependencies with ${options.packageManager}, this could take a while`,
+        task: (_, task) => installPackages(targetDirectory, task, options.packageManager),
         skip: () => {
           if (!options.install) {
             return "Manually skipped, since `--skip-install` flag was passed";

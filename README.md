@@ -164,6 +164,23 @@ Pre-commit hooks (lefthook) run format, type-check, and lint.
 
 ---
 
+## E2E scenarios (manual check)
+
+From the repo root after `yarn build`, you can run:
+
+| Scenario        | Command                                                                                                                 | What to check                         |
+| --------------- | ----------------------------------------------------------------------------------------------------------------------- | ------------------------------------- |
+| Help            | `node bin/create-hbar.js --help`                                                                                        | All options listed                    |
+| Default         | `node bin/create-hbar.js e2e-scenarios/default --yes --skip-install`                                                    | Scaffold + skip install               |
+| Solidity none   | `node bin/create-hbar.js e2e-scenarios/sol-none --yes --skip-install -s none`                                           | No "and submodules"                   |
+| Hardhat         | `node bin/create-hbar.js e2e-scenarios/sol-hardhat --yes --skip-install -s hardhat`                                     | `packages/hardhat` + `nextjs`         |
+| Custom flags    | `node bin/create-hbar.js e2e-scenarios/custom --yes --skip-install -t blank -f vite-react --network mainnet --use-pnpm` | Title shows "pnpm"                    |
+| Install failure | `node bin/create-hbar.js e2e-scenarios/with-install --yes -s hardhat --use-npm`                                         | Exit code **5**, InstallError message |
+
+Output goes under `e2e-scenarios/` (gitignored).
+
+---
+
 ## Project structure
 
 ```

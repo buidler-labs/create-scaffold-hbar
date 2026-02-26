@@ -40,7 +40,7 @@ export function renderOutroMessage(options: Options) {
   `;
 
   message += `
-  ${chalk.bold.green("Thanks for using Scaffold-ETH 2 🙏, Happy Building!")}
+  ${chalk.bold.green("Thanks for using Scaffold-HBAR 🙏, Happy Building!")}
   `;
 
   console.log(message);

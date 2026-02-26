@@ -1,4 +1,5 @@
 import { createProject } from "./main";
+import { InstallError } from "./tasks";
 import { parseArgumentsIntoOptions } from "./utils/parse-arguments-into-options";
 import { promptForMissingOptions } from "./utils/prompt-for-missing-options";
 import { renderIntroMessage } from "./utils/render-intro-message";
@@ -27,7 +28,11 @@ export async function cli(args: Args) {
     }
 
     await createProject(options);
-  } catch (error: any) {
+  } catch (error: unknown) {
+    if (error instanceof InstallError) {
+      console.error(chalk.red(`\n${error.message}`));
+      process.exit(error.exitCode);
+    }
     console.log("%s Error occurred", chalk.red.bold("ERROR"), error);
     console.log("%s Exiting...", chalk.red.bold("Uh oh! Sorry about that!"));
     process.exitCode = EXIT_CODES.GENERIC;
