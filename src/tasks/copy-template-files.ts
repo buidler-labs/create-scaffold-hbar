@@ -445,7 +445,7 @@ function filterRootPackageJson(targetDir: string, selectedFramework: string | nu
         for (const sf of unselected) {
           const delegatePrefix = `yarn ${sf}:`;
           if (typeof pkg.scripts[key] === "string" && pkg.scripts[key].startsWith(delegatePrefix)) {
-            const subCommand = (pkg.scripts[key] as string).slice(delegatePrefix.length);
+            const subCommand = pkg.scripts[key].slice(delegatePrefix.length);
             pkg.scripts[key] = `yarn ${selectedFramework}:${subCommand}`;
           }
         }
