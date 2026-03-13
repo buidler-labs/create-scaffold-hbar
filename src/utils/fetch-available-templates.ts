@@ -7,7 +7,8 @@ import { TEMPLATE_BRANCH_PREFIX, TEMPLATE_REPO, TEMPLATES_FALLBACK } from "./con
  */
 export function getTemplateSpec(template: string): string {
   if (template.includes("/")) return template;
-  const branch = TEMPLATE_BRANCH_PREFIX.replace(/\/$/, "") + template;
+  const prefix = TEMPLATE_BRANCH_PREFIX.endsWith("/") ? TEMPLATE_BRANCH_PREFIX : `${TEMPLATE_BRANCH_PREFIX}/`;
+  const branch = `${prefix}${template}`;
   return `${TEMPLATE_REPO}#${branch}`;
 }
 
