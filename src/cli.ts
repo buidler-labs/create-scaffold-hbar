@@ -20,7 +20,7 @@ export async function cli(args: Args) {
       process.exit(EXIT_CODES.GENERIC);
     }
 
-    const { rawOptions } = await parseArgumentsIntoOptions(args);
+    const { rawOptions } = parseArgumentsIntoOptions(args);
 
     const options = await promptForMissingOptions(rawOptions);
     if (options.solidityFramework === SOLIDITY_FRAMEWORKS.FOUNDRY) {

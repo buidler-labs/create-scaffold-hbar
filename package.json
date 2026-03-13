@@ -11,8 +11,6 @@
   "bin": "bin/create-hbar.js",
   "scripts": {
     "build": "rollup -c rollup.config.js && node scripts/write-bin.js",
-    "build:dev": "yarn build && rollup -c src/dev/rollup.config.js",
-    "create-extension": "node dist/create-extension/create-extension.js",
     "dev": "rollup -c rollup.config.js --watch",
     "cli": "node bin/create-hbar.js",
     "lint": "eslint .",

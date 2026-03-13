@@ -5,11 +5,6 @@ import { EXIT_CODES, DEFAULT_OPTIONS } from "../../src/utils/consts";
 // These must be hoisted before importing the module under test so vitest
 // replaces them before the module is evaluated.
 
-vi.mock("../../src/utils/external-extensions", () => ({
-  validateExternalExtension: vi.fn().mockResolvedValue(null),
-  getSolidityFrameworkDirsFromExternalExtension: vi.fn().mockResolvedValue([]),
-}));
-
 vi.mock("execa", () => ({
   execa: vi.fn(),
 }));
@@ -49,178 +44,177 @@ describe("parseArgumentsIntoOptions", () => {
   });
 
   describe("positional project-name", () => {
-    it("sets project from positional arg", async () => {
-      const { rawOptions } = await parseArgumentsIntoOptions(args("my-hedera-dapp"));
+    it("sets project from positional arg", () => {
+      const { rawOptions } = parseArgumentsIntoOptions(args("my-hedera-dapp"));
       expect(rawOptions.project).toBe("my-hedera-dapp");
     });
 
-    it("leaves project null when no positional arg or destination flag", async () => {
-      const { rawOptions } = await parseArgumentsIntoOptions(args());
+    it("leaves project null when no positional arg or destination flag", () => {
+      const { rawOptions } = parseArgumentsIntoOptions(args());
       expect(rawOptions.project).toBeNull();
     });
   });
 
   describe("--destination / -d", () => {
-    it("sets project from --destination flag", async () => {
-      const { rawOptions } = await parseArgumentsIntoOptions(args("--destination", "my-dapp"));
+    it("sets project from --destination flag", () => {
+      const { rawOptions } = parseArgumentsIntoOptions(args("--destination", "my-dapp"));
       expect(rawOptions.project).toBe("my-dapp");
     });
 
-    it("-d short alias works", async () => {
-      const { rawOptions } = await parseArgumentsIntoOptions(args("-d", "short-dapp"));
+    it("-d short alias works", () => {
+      const { rawOptions } = parseArgumentsIntoOptions(args("-d", "short-dapp"));
       expect(rawOptions.project).toBe("short-dapp");
     });
 
-    it("--destination takes precedence over positional arg", async () => {
-      const { rawOptions } = await parseArgumentsIntoOptions(args("positional-name", "--destination", "flag-name"));
+    it("--destination takes precedence over positional arg", () => {
+      const { rawOptions } = parseArgumentsIntoOptions(args("positional-name", "--destination", "flag-name"));
       expect(rawOptions.project).toBe("flag-name");
     });
   });
 
   describe("--template / -t", () => {
-    it("sets template to a built-in key", async () => {
-      const { rawOptions } = await parseArgumentsIntoOptions(args("--template", "hts-nft"));
+    it("sets template to a built-in key", () => {
+      const { rawOptions } = parseArgumentsIntoOptions(args("--template", "hts-nft"));
       expect(rawOptions.template).toBe("hts-nft");
     });
 
-    it("-t short alias works", async () => {
-      const { rawOptions } = await parseArgumentsIntoOptions(args("-t", "hcs-dao"));
+    it("-t short alias works", () => {
+      const { rawOptions } = parseArgumentsIntoOptions(args("-t", "hcs-dao"));
       expect(rawOptions.template).toBe("hcs-dao");
     });
 
-    it("passes through community org/repo template without validation", async () => {
-      const { rawOptions } = await parseArgumentsIntoOptions(args("--template", "my-org/my-template"));
+    it("passes through community org/repo template without validation", () => {
+      const { rawOptions } = parseArgumentsIntoOptions(args("--template", "my-org/my-template"));
       expect(rawOptions.template).toBe("my-org/my-template");
     });
 
-    it("exits BAD_ARGS on unknown built-in template value", async () => {
-      await expect(parseArgumentsIntoOptions(args("--template", "ethereum-nft"))).rejects.toThrow(
-        `process.exit(${EXIT_CODES.BAD_ARGS})`,
-      );
+    it("accepts any template name (no hardcoded list validation)", () => {
+      const { rawOptions } = parseArgumentsIntoOptions(args("--template", "ethereum-nft"));
+      expect(rawOptions.template).toBe("ethereum-nft");
     });
 
-    it("leaves template null when flag is omitted", async () => {
-      const { rawOptions } = await parseArgumentsIntoOptions(args());
+    it("leaves template null when flag is omitted", () => {
+      const { rawOptions } = parseArgumentsIntoOptions(args());
       expect(rawOptions.template).toBeNull();
     });
   });
 
   describe("--frontend / -f", () => {
-    it("accepts nextjs-app", async () => {
-      const { rawOptions } = await parseArgumentsIntoOptions(args("--frontend", "nextjs-app"));
+    it("accepts nextjs-app", () => {
+      const { rawOptions } = parseArgumentsIntoOptions(args("--frontend", "nextjs-app"));
       expect(rawOptions.frontend).toBe("nextjs-app");
     });
 
-    it("exits BAD_ARGS on invalid frontend value", async () => {
-      await expect(parseArgumentsIntoOptions(args("--frontend", "react-native"))).rejects.toThrow(
+    it("exits BAD_ARGS on invalid frontend value", () => {
+      expect(() => parseArgumentsIntoOptions(args("--frontend", "react-native"))).toThrow(
         `process.exit(${EXIT_CODES.BAD_ARGS})`,
       );
     });
   });
 
   describe("--solidity-framework / -s", () => {
-    it("accepts foundry", async () => {
-      const { rawOptions } = await parseArgumentsIntoOptions(args("-s", "foundry"));
+    it("accepts foundry", () => {
+      const { rawOptions } = parseArgumentsIntoOptions(args("-s", "foundry"));
       expect(rawOptions.solidityFramework).toBe("foundry");
     });
 
-    it("accepts hardhat", async () => {
-      const { rawOptions } = await parseArgumentsIntoOptions(args("-s", "hardhat"));
+    it("accepts hardhat", () => {
+      const { rawOptions } = parseArgumentsIntoOptions(args("-s", "hardhat"));
       expect(rawOptions.solidityFramework).toBe("hardhat");
     });
 
-    it("accepts none", async () => {
-      const { rawOptions } = await parseArgumentsIntoOptions(args("-s", "none"));
+    it("accepts none", () => {
+      const { rawOptions } = parseArgumentsIntoOptions(args("-s", "none"));
       expect(rawOptions.solidityFramework).toBe("none");
     });
 
-    it("exits BAD_ARGS on invalid value", async () => {
-      await expect(parseArgumentsIntoOptions(args("--solidity-framework", "truffle"))).rejects.toThrow(
+    it("exits BAD_ARGS on invalid value", () => {
+      expect(() => parseArgumentsIntoOptions(args("--solidity-framework", "truffle"))).toThrow(
         `process.exit(${EXIT_CODES.BAD_ARGS})`,
       );
     });
   });
 
   describe("--wallet / -w", () => {
-    it("parses a single wallet value", async () => {
-      const { rawOptions } = await parseArgumentsIntoOptions(args("--wallet", "walletconnect"));
-      expect(rawOptions.wallet).toEqual(["walletconnect"]);
+    it("parses a single wallet value", () => {
+      const { rawOptions } = parseArgumentsIntoOptions(args("--wallet", "rainbowkit"));
+      expect(rawOptions.wallet).toEqual(["rainbowkit"]);
     });
 
-    it("exits BAD_ARGS on invalid wallet value", async () => {
-      await expect(parseArgumentsIntoOptions(args("--wallet", "hashconnect"))).rejects.toThrow(
+    it("exits BAD_ARGS on invalid wallet value", () => {
+      expect(() => parseArgumentsIntoOptions(args("--wallet", "hashconnect"))).toThrow(
         `process.exit(${EXIT_CODES.BAD_ARGS})`,
       );
     });
   });
 
   describe("--network", () => {
-    it("accepts testnet", async () => {
-      const { rawOptions } = await parseArgumentsIntoOptions(args("--network", "testnet"));
+    it("accepts testnet", () => {
+      const { rawOptions } = parseArgumentsIntoOptions(args("--network", "testnet"));
       expect(rawOptions.network).toBe("testnet");
     });
 
-    it("accepts mainnet", async () => {
-      const { rawOptions } = await parseArgumentsIntoOptions(args("--network", "mainnet"));
+    it("accepts mainnet", () => {
+      const { rawOptions } = parseArgumentsIntoOptions(args("--network", "mainnet"));
       expect(rawOptions.network).toBe("mainnet");
     });
 
-    it("exits BAD_ARGS on invalid network (e.g. local)", async () => {
-      await expect(parseArgumentsIntoOptions(args("--network", "local"))).rejects.toThrow(
+    it("exits BAD_ARGS on invalid network (e.g. local)", () => {
+      expect(() => parseArgumentsIntoOptions(args("--network", "local"))).toThrow(
         `process.exit(${EXIT_CODES.BAD_ARGS})`,
       );
     });
 
-    it("exits BAD_ARGS on unknown network value", async () => {
-      await expect(parseArgumentsIntoOptions(args("--network", "ropsten"))).rejects.toThrow(
+    it("exits BAD_ARGS on unknown network value", () => {
+      expect(() => parseArgumentsIntoOptions(args("--network", "ropsten"))).toThrow(
         `process.exit(${EXIT_CODES.BAD_ARGS})`,
       );
     });
   });
 
   describe("package manager flags", () => {
-    it("--use-npm sets packageManager to npm", async () => {
-      const { rawOptions } = await parseArgumentsIntoOptions(args("--use-npm"));
+    it("--use-npm sets packageManager to npm", () => {
+      const { rawOptions } = parseArgumentsIntoOptions(args("--use-npm"));
       expect(rawOptions.packageManager).toBe("npm");
     });
 
-    it("-p / --use-pnpm sets packageManager to pnpm", async () => {
-      const { rawOptions } = await parseArgumentsIntoOptions(args("-p"));
+    it("-p / --use-pnpm sets packageManager to pnpm", () => {
+      const { rawOptions } = parseArgumentsIntoOptions(args("-p"));
       expect(rawOptions.packageManager).toBe("pnpm");
     });
 
-    it("--use-yarn sets packageManager to yarn", async () => {
-      const { rawOptions } = await parseArgumentsIntoOptions(args("--use-yarn"));
+    it("--use-yarn sets packageManager to yarn", () => {
+      const { rawOptions } = parseArgumentsIntoOptions(args("--use-yarn"));
       expect(rawOptions.packageManager).toBe("yarn");
     });
 
-    it("--use-bun sets packageManager to bun", async () => {
-      const { rawOptions } = await parseArgumentsIntoOptions(args("--use-bun"));
+    it("--use-bun sets packageManager to bun", () => {
+      const { rawOptions } = parseArgumentsIntoOptions(args("--use-bun"));
       expect(rawOptions.packageManager).toBe("bun");
     });
 
-    it("exits BAD_ARGS when multiple PM flags are combined", async () => {
-      await expect(parseArgumentsIntoOptions(args("--use-npm", "--use-pnpm"))).rejects.toThrow(
+    it("exits BAD_ARGS when multiple PM flags are combined", () => {
+      expect(() => parseArgumentsIntoOptions(args("--use-npm", "--use-pnpm"))).toThrow(
         `process.exit(${EXIT_CODES.BAD_ARGS})`,
       );
     });
   });
 
   describe("--skip-install", () => {
-    it("sets install to false", async () => {
-      const { rawOptions } = await parseArgumentsIntoOptions(args("--skip-install"));
+    it("sets install to false", () => {
+      const { rawOptions } = parseArgumentsIntoOptions(args("--skip-install"));
       expect(rawOptions.install).toBe(false);
     });
 
-    it("install defaults to true when flag is absent", async () => {
-      const { rawOptions } = await parseArgumentsIntoOptions(args());
+    it("install defaults to true when flag is absent", () => {
+      const { rawOptions } = parseArgumentsIntoOptions(args());
       expect(rawOptions.install).toBe(true);
     });
   });
 
   describe("--yes / -y", () => {
-    it("applies all DEFAULT_OPTIONS when no other flags given", async () => {
-      const { rawOptions } = await parseArgumentsIntoOptions(args("--yes"));
+    it("applies all DEFAULT_OPTIONS when no other flags given", () => {
+      const { rawOptions } = parseArgumentsIntoOptions(args("--yes"));
       expect(rawOptions.project).toBe(DEFAULT_OPTIONS.project);
       expect(rawOptions.template).toBe(DEFAULT_OPTIONS.template);
       expect(rawOptions.frontend).toBe(DEFAULT_OPTIONS.frontend);
@@ -228,60 +222,58 @@ describe("parseArgumentsIntoOptions", () => {
       expect(rawOptions.install).toBe(DEFAULT_OPTIONS.install);
     });
 
-    it("explicit flags win over --yes defaults", async () => {
-      const { rawOptions } = await parseArgumentsIntoOptions(
-        args("--yes", "--template", "hts-nft", "--network", "mainnet"),
-      );
+    it("explicit flags win over --yes defaults", () => {
+      const { rawOptions } = parseArgumentsIntoOptions(args("--yes", "--template", "hts-nft", "--network", "mainnet"));
       expect(rawOptions.template).toBe("hts-nft");
       expect(rawOptions.network).toBe("mainnet");
     });
 
-    it("-y short alias works", async () => {
-      const { rawOptions } = await parseArgumentsIntoOptions(args("-y"));
+    it("-y short alias works", () => {
+      const { rawOptions } = parseArgumentsIntoOptions(args("-y"));
       expect(rawOptions.project).toBe(DEFAULT_OPTIONS.project);
     });
   });
 
   describe("--ci", () => {
-    it("implies --yes: applies all defaults", async () => {
-      const { rawOptions } = await parseArgumentsIntoOptions(args("--ci"));
+    it("implies --yes: applies all defaults", () => {
+      const { rawOptions } = parseArgumentsIntoOptions(args("--ci"));
       expect(rawOptions.project).toBe(DEFAULT_OPTIONS.project);
       expect(rawOptions.template).toBe(DEFAULT_OPTIONS.template);
       expect(rawOptions.network).toBe(DEFAULT_OPTIONS.network);
     });
 
-    it("sets HBAR_CI env var to '1'", async () => {
-      await parseArgumentsIntoOptions(args("--ci"));
+    it("sets HBAR_CI env var to '1'", () => {
+      parseArgumentsIntoOptions(args("--ci"));
       expect(process.env.HBAR_CI).toBe("1");
     });
 
-    it("does not set HBAR_CI when --ci is absent", async () => {
-      await parseArgumentsIntoOptions(args());
+    it("does not set HBAR_CI when --ci is absent", () => {
+      parseArgumentsIntoOptions(args());
       expect(process.env.HBAR_CI).toBeUndefined();
     });
   });
 
   describe("--log-level", () => {
-    it("defaults to info", async () => {
-      await parseArgumentsIntoOptions(args());
+    it("defaults to info", () => {
+      parseArgumentsIntoOptions(args());
       expect(process.env.HBAR_LOG_LEVEL).toBe("info");
     });
 
-    it("accepts verbose", async () => {
-      await parseArgumentsIntoOptions(args("--log-level", "verbose"));
+    it("accepts verbose", () => {
+      parseArgumentsIntoOptions(args("--log-level", "verbose"));
       expect(process.env.HBAR_LOG_LEVEL).toBe("verbose");
     });
 
-    it("exits BAD_ARGS on invalid log level", async () => {
-      await expect(parseArgumentsIntoOptions(args("--log-level", "trace"))).rejects.toThrow(
+    it("exits BAD_ARGS on invalid log level", () => {
+      expect(() => parseArgumentsIntoOptions(args("--log-level", "trace"))).toThrow(
         `process.exit(${EXIT_CODES.BAD_ARGS})`,
       );
     });
   });
 
   describe("solidityFrameworkChoices", () => {
-    it("returns all three choices when no extension is given", async () => {
-      const { solidityFrameworkChoices } = await parseArgumentsIntoOptions(args());
+    it("returns all three choices when no extension is given", () => {
+      const { solidityFrameworkChoices } = parseArgumentsIntoOptions(args());
       expect(solidityFrameworkChoices).toHaveLength(3);
     });
   });

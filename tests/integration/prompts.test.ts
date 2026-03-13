@@ -57,8 +57,6 @@ function makeRawOptions(overrides: Partial<RawOptions> = {}): RawOptions {
     network: null,
     packageManager: null,
     install: true,
-    dev: false,
-    externalExtension: null,
     help: false,
     ...overrides,
   };
@@ -94,8 +92,8 @@ describe("promptForMissingOptions", () => {
   });
 
   it("skips frontend prompt when frontend is pre-supplied", async () => {
-    const result = await promptForMissingOptions(makeRawOptions({ frontend: "vite-react" }));
-    expect(result.frontend).toBe("vite-react");
+    const result = await promptForMissingOptions(makeRawOptions({ frontend: "nextjs-app" }));
+    expect(result.frontend).toBe("nextjs-app");
   });
 
   it("skips solidityFramework prompt when pre-supplied", async () => {
@@ -104,8 +102,8 @@ describe("promptForMissingOptions", () => {
   });
 
   it("skips wallet prompt when wallet is pre-supplied", async () => {
-    const result = await promptForMissingOptions(makeRawOptions({ wallet: ["walletconnect"] }));
-    expect(result.wallet).toEqual(["walletconnect"]);
+    const result = await promptForMissingOptions(makeRawOptions({ wallet: ["rainbowkit"] }));
+    expect(result.wallet).toEqual(["rainbowkit"]);
   });
 
   it("skips network prompt when network is pre-supplied", async () => {
@@ -157,24 +155,13 @@ describe("promptForMissingOptions", () => {
   });
 
   it("prompts for wallet when not pre-supplied", async () => {
-    mockMultiselect.mockResolvedValue(["walletconnect"] as Wallet[]);
+    mockMultiselect.mockResolvedValue(["rainbowkit"] as Wallet[]);
     const result = await promptForMissingOptions(makeRawOptions({ frontend: "nextjs-app" }));
-    expect(result.wallet).toEqual(["walletconnect"]);
+    expect(result.wallet).toEqual(["rainbowkit"]);
     expect(mockMultiselect).toHaveBeenCalledTimes(1);
   });
 
   // ── Pass-through fields ──────────────────────────────────────────────────
-
-  it("preserves dev flag", async () => {
-    const result = await promptForMissingOptions(makeRawOptions({ dev: true }));
-    expect(result.dev).toBe(true);
-  });
-
-  it("preserves externalExtension", async () => {
-    const ext = { repository: "https://github.com/org/ext" };
-    const result = await promptForMissingOptions(makeRawOptions({ externalExtension: ext }));
-    expect(result.externalExtension).toBe(ext);
-  });
 
   // ── onCancel exits with 130 ──────────────────────────────────────────────
 
@@ -211,11 +198,10 @@ describe("promptForMissingOptions", () => {
       template: "defi-swap",
       frontend: "nextjs-app",
       solidityFramework: "foundry",
-      wallet: ["walletconnect"],
+      wallet: ["rainbowkit"],
       network: "mainnet",
       packageManager: "bun",
       install: false,
-      dev: true,
     });
 
     const result = await promptForMissingOptions(raw);
@@ -225,12 +211,10 @@ describe("promptForMissingOptions", () => {
       template: "defi-swap",
       frontend: "nextjs-app",
       solidityFramework: "foundry",
-      wallet: ["walletconnect"],
+      wallet: ["rainbowkit"],
       network: "mainnet",
       packageManager: "bun",
       install: false,
-      dev: true,
-      externalExtension: null,
     });
 
     expect(mockText).not.toHaveBeenCalled();

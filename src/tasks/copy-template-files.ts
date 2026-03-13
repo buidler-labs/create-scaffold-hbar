@@ -107,7 +107,7 @@ function filterRootPackageJson(targetDir: string, selectedFramework: SolidityFra
       for (const key of Object.keys(scripts)) {
         if (typeof scripts[key] === "string") {
           for (const sf of unselected) {
-            scripts[key] = (scripts[key] as string)
+            scripts[key] = scripts[key]
               .replace(new RegExp(`\\s*&&\\s*yarn ${sf}:[^\\s&]+`, "g"), "")
               .replace(new RegExp(`yarn ${sf}:[^\\s&]+\\s*&&\\s*`, "g"), "")
               .trim();

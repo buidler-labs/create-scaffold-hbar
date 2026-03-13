@@ -2,7 +2,7 @@ import { DefaultRenderer, ListrTaskWrapper, SimpleRenderer } from "listr2";
 import { execa, execaCommand } from "execa";
 import chalk from "chalk";
 import type { PackageManager } from "../types";
-import { EXIT_CODES } from "../utils/consts";
+import { InstallError } from "../utils/errors";
 
 const INSTALL_ARGS: Record<PackageManager, string[]> = {
   npm: ["install"],
@@ -11,18 +11,7 @@ const INSTALL_ARGS: Record<PackageManager, string[]> = {
   bun: ["install"],
 };
 
-/** Thrown when dependency installation fails. Exit code 5. */
-export class InstallError extends Error {
-  readonly exitCode = EXIT_CODES.INSTALL_FAILED;
-
-  constructor(message: string, cause?: unknown) {
-    super(message);
-    this.name = "InstallError";
-    if (cause instanceof Error) {
-      this.cause = cause;
-    }
-  }
-}
+export { InstallError };
 
 function getBinary(pm: PackageManager): string {
   return pm;

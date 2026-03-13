@@ -22,22 +22,6 @@ export type SolidityFramework = "hardhat" | "foundry";
 /** Wallet connector (WalletConnect only). */
 export type Wallet = "rainbowkit";
 
-/** Dev-mode extension name (a local directory name under externalExtensions/). */
-export type ExternalExtensionNameDev = string;
-
-/** A resolved external extension reference. */
-export type ExternalExtension = {
-  repository: string;
-  branch?: string | null;
-  /** Minimum create-hbar version required by this extension. */
-  createHbarVersion?: string;
-  /**
-   * @deprecated Use createHbarVersion. Retained for backward compatibility
-   * with scaffold-eth community extensions that still set createEthVersion.
-   */
-  createEthVersion?: string;
-};
-
 const EnvVarSchema = z.object({
   /** Environment variable key, e.g. HEDERA_ACCOUNT_ID */
   key: z.string().min(1),
@@ -97,10 +81,6 @@ type BaseOptions = {
   project: string | null;
   /** Run `npm/pnpm/yarn/bun install` after scaffolding. */
   install: boolean;
-  /** Dev mode — uses symlinks instead of file copies for local template work. */
-  dev: boolean;
-  /** Community extension (-e flag). */
-  externalExtension: ExternalExtension | ExternalExtensionNameDev | null;
   /** Solidity / contract framework. `"none"` means contracts-only with no framework. */
   solidityFramework: SolidityFramework | "none" | null;
   /** Starter template key or `"org/repo"` community template path. */
@@ -123,16 +103,15 @@ export type RawOptions = BaseOptions & {
 
 /**
  * Fully resolved options after all prompts have been answered.
- * All nullable fields are guaranteed non-null except `externalExtension`
- * and `solidityFramework` (which can legitimately be null/none).
+ * All nullable fields are guaranteed non-null except `solidityFramework`
+ * (which can legitimately be null for "none").
  */
 export type Options = {
   [Prop in keyof Omit<
     BaseOptions,
-    "externalExtension" | "solidityFramework" | "template" | "frontend" | "wallet" | "network" | "packageManager"
+    "solidityFramework" | "template" | "frontend" | "wallet" | "network" | "packageManager"
   >]: NonNullable<BaseOptions[Prop]>;
 } & {
-  externalExtension: RawOptions["externalExtension"];
   solidityFramework: SolidityFramework | null;
   template: Template | (string & {});
   frontend: Frontend;
@@ -149,8 +128,5 @@ export type TemplateDescriptor = {
   source: string;
 };
 
-/**
- * The list of solidity framework options surfaced to the user.
- * Extensions can narrow this list to only the frameworks they support.
- */
-export type SolidityFrameworkChoices = (SolidityFramework | { value: any; name: string })[];
+/** Solidity framework choices for the prompt (fixed list). */
+export type SolidityFrameworkChoices = (SolidityFramework | "none" | { value: null; name: string })[];

@@ -9,7 +9,6 @@ import type {
   Wallet,
 } from "../types";
 import { Command } from "commander";
-import { getSolidityFrameworkDirsFromExternalExtension, validateExternalExtension } from "./external-extensions";
 import chalk from "chalk";
 import {
   SOLIDITY_FRAMEWORKS,
@@ -24,8 +23,6 @@ import {
 import { validateNpmName } from "./validate-name";
 import { detectPackageManager } from "./detect-pm";
 import packageJson from "../../package.json";
-import { execa } from "execa";
-import * as p from "@clack/prompts";
 
 // ─── Valid enum values derived from consts (single source of truth) ───────────
 // Extracting .value from each option array means adding a new entry to consts.ts
@@ -69,12 +66,11 @@ export { detectPackageManager } from "./detect-pm";
 
 /**
  * Parses CLI arguments using commander and returns raw (pre-prompt) options.
- * Keeps the return signature compatible with cli.ts which also expects
- * `solidityFrameworkChoices` (used by the extension system).
  */
-export async function parseArgumentsIntoOptions(
-  rawArgs: Args,
-): Promise<{ rawOptions: RawOptions; solidityFrameworkChoices: SolidityFrameworkChoices }> {
+export function parseArgumentsIntoOptions(rawArgs: Args): {
+  rawOptions: RawOptions;
+  solidityFrameworkChoices: SolidityFrameworkChoices;
+} {
   const program = new Command();
 
   program
@@ -96,8 +92,6 @@ export async function parseArgumentsIntoOptions(
     .option("-y, --yes", "Accept all defaults and skip all prompts")
     .option("--ci", "CI mode: non-interactive, structured log output, no TTY color")
     .option("--log-level <level>", "Log verbosity (error|warn|info|verbose|debug)", "info")
-    .option("-e, --extension <ext>", "Community extension (owner/repo or curated name)")
-    .option("--dev", "Dev mode: use local externalExtensions/ symlinks instead of downloads")
     .helpOption("-h, --help", "Display help text and exit")
     // Prevent commander from calling process.exit on unknown options so we
     // can surface a friendlier BAD_ARGS message ourselves.
@@ -173,85 +167,20 @@ export async function parseArgumentsIntoOptions(
   else if (opts.useBun) packageManager = validateEnum("bun", VALID_PACKAGE_MANAGERS, "use-bun");
 
   // ── --ci implies --yes ────────────────────────────────────────────────────
-  const isCi = Boolean(opts.ci);
-  const acceptDefaults = Boolean(opts.yes) || isCi;
+  const acceptDefaults = Boolean(opts.yes) || Boolean(opts.ci);
 
-  // ── Extension system (kept from original) ─────────────────────────────────
-  const dev = Boolean(opts.dev);
-  const extensionName = opts.extension as string | undefined;
-  const extension = extensionName ? await validateExternalExtension(extensionName, dev) : null;
-
-  if (extension && typeof extension === "object" && !extension.isTrusted) {
-    console.log(
-      chalk.yellow(
-        ` You are using a third-party extension. Make sure you trust the source of ${chalk.yellow.bold(extension.repository)}\n`,
-      ),
-    );
-  }
-
-  // Check if extension recommends a different create-hbar version
-  if (extension && typeof extension === "object" && extension.recommendedCreateEthVersion) {
-    const currentVersion = packageJson.version;
-    if (extension.recommendedCreateEthVersion !== currentVersion) {
-      console.log(
-        chalk.yellow(
-          `\n⚠️  This extension recommends create-hbar ${chalk.bold(`v${extension.recommendedCreateEthVersion}`)}, but you are running ${chalk.bold(`v${currentVersion}`)}.\n`,
-        ),
-      );
-
-      if (!isCi) {
-        const switchVersion = await p.confirm({
-          message: `Run with the recommended version (${extension.recommendedCreateEthVersion})?`,
-          initialValue: true,
-        });
-
-        if (switchVersion && !p.isCancel(switchVersion)) {
-          console.log(chalk.gray(`\nSwitching to create-hbar@${extension.recommendedCreateEthVersion}...\n`));
-          await execa("npx", [`create-hbar@${extension.recommendedCreateEthVersion}`, ...rawArgs.slice(2)], {
-            stdio: "inherit",
-          });
-          process.exit(EXIT_CODES.SUCCESS);
-        }
-
-        const proceed = await p.confirm({
-          message: "Proceed with the current version anyway?",
-          initialValue: false,
-        });
-
-        if (!proceed || p.isCancel(proceed)) {
-          p.cancel("Cancelled. No project was created.");
-          process.exit(EXIT_CODES.CANCELLED);
-        }
-      }
-    }
-  }
-
-  // ── Build solidityFrameworkChoices (extension may narrow the list) ─────────
-  let solidityFrameworkChoices: SolidityFrameworkChoices = [
+  const solidityFrameworkChoices: SolidityFrameworkChoices = [
     SOLIDITY_FRAMEWORKS.HARDHAT,
     SOLIDITY_FRAMEWORKS.FOUNDRY,
     { value: null, name: "none" },
   ];
 
-  if (extension) {
-    const dirs = await getSolidityFrameworkDirsFromExternalExtension(extension);
-    if (dirs.length !== 0) {
-      solidityFrameworkChoices = dirs;
-    }
-  }
-
-  // If the extension narrows to exactly one framework, use it automatically.
-  const solidityFramework: SolidityFramework | "none" | null =
-    solidityFrameworkChoices.length === 1
-      ? (solidityFrameworkChoices[0] as SolidityFramework | "none")
-      : solidityFrameworkRaw;
+  const solidityFramework: SolidityFramework | "none" | null = solidityFrameworkRaw;
 
   // ── Apply --yes / --ci defaults for any still-null fields ─────────────────
   const rawOptions: RawOptions = {
     project: acceptDefaults ? (project ?? DEFAULT_OPTIONS.project) : project,
     install: opts.skipInstall ? false : acceptDefaults ? DEFAULT_OPTIONS.install : true,
-    dev,
-    externalExtension: extension,
     help: false, // --help is handled by commander before we reach here
     solidityFramework:
       acceptDefaults && !solidityFramework
@@ -264,9 +193,7 @@ export async function parseArgumentsIntoOptions(
     packageManager: packageManager ?? (acceptDefaults ? detectPackageManager() : null),
   };
 
-  // Expose ci and logLevel on the process env so downstream modules can read them
-  // without needing to thread Options through every call site.
-  if (isCi) process.env.HBAR_CI = "1";
+  if (opts.ci) process.env.HBAR_CI = "1";
   process.env.HBAR_LOG_LEVEL = logLevel;
 
   return { rawOptions, solidityFrameworkChoices };

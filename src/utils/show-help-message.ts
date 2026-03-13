@@ -31,7 +31,6 @@ export const showHelpMessage = () => {
     ${chalk.gray("--ci")}                            CI mode: non-interactive, structured output, no color
     ${chalk.gray("--log-level <level>")}             Log verbosity (default: info)
                                        ${chalk.dim("error | warn | info | verbose | debug")}
-    ${chalk.gray("-e, --extension <ext>")}           Add a curated or third-party extension
     ${chalk.gray("-v, --version")}                   Print CLI version and exit
     ${chalk.gray("-h, --help")}                       Display this help text and exit
 

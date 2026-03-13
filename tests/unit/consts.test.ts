@@ -122,9 +122,9 @@ describe("SOLIDITY_FRAMEWORK_OPTIONS", () => {
 });
 
 describe("WALLETS", () => {
-  it("only includes walletconnect", () => {
+  it("only includes rainbowkit", () => {
     expect(WALLETS).toHaveLength(1);
-    expect(WALLETS[0].value).toBe("walletconnect");
+    expect(WALLETS[0].value).toBe("rainbowkit");
   });
 
   it("does not include hashconnect (deprecated)", () => {
@@ -153,8 +153,8 @@ describe("DEFAULT_OPTIONS", () => {
     expect(DEFAULT_OPTIONS.network).toBe("testnet");
   });
 
-  it("defaults to walletconnect wallet", () => {
-    expect(DEFAULT_OPTIONS.wallet).toContain("walletconnect");
+  it("defaults to rainbowkit wallet", () => {
+    expect(DEFAULT_OPTIONS.wallet).toContain("rainbowkit");
   });
 
   it("defaults to blank template", () => {

@@ -125,8 +125,6 @@ export async function promptForMissingOptions(rawOptions: RawOptions): Promise<O
     network: answers.network as Network,
     packageManager: answers.packageManager as PackageManager,
     install: Boolean(answers.install),
-    dev: rawOptions.dev,
-    externalExtension: rawOptions.externalExtension,
     solidityFramework,
   };
 
