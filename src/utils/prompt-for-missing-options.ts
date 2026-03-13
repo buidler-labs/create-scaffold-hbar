@@ -119,7 +119,7 @@ export async function promptForMissingOptions(rawOptions: RawOptions): Promise<O
 
   const options: Options = {
     project: answers.project,
-    template: answers.template as string,
+    template: answers.template,
     frontend: answers.frontend as Frontend,
     wallet: answers.wallet,
     network: answers.network as Network,
