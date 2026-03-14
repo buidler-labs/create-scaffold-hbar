@@ -61,7 +61,6 @@
   },
   "dependencies": {
     "@clack/prompts": "^0.9.0",
-    "@fastify/deepmerge": "^3.1.0",
     "chalk": "^5.4.1",
     "commander": "^12.1.0",
     "execa": "^9.6.0",
