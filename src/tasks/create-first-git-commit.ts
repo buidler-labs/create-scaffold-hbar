@@ -5,7 +5,12 @@ import fs from "fs";
 import { SOLIDITY_FRAMEWORKS } from "../utils/consts";
 import packageJson from "../../package.json";
 
-const foundryLibraries = ["foundry-rs/forge-std", "OpenZeppelin/openzeppelin-contracts", "gnsps/solidity-bytes-utils"];
+const foundryLibraries = [
+  "foundry-rs/forge-std",
+  "OpenZeppelin/openzeppelin-contracts",
+  "gnsps/solidity-bytes-utils",
+  "hashgraph/hedera-forking",
+];
 const createHbarVersion = packageJson.version;
 
 /**
