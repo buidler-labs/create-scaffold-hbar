@@ -178,18 +178,16 @@ export function parseArgumentsIntoOptions(rawArgs: Args): {
     project: acceptDefaults ? (project ?? DEFAULT_OPTIONS.project) : project,
     install: opts.skipInstall ? false : acceptDefaults ? DEFAULT_OPTIONS.install : true,
     help: false, // --help is handled by commander before we reach here
-    solidityFramework:
-      acceptDefaults && !solidityFramework
-        ? (DEFAULT_OPTIONS.solidityFramework as SolidityFramework)
-        : solidityFramework,
+    solidityFramework,
     template: acceptDefaults ? (template ?? DEFAULT_OPTIONS.template) : template,
-    frontend: acceptDefaults ? (frontend ?? DEFAULT_OPTIONS.frontend) : frontend,
+    frontend,
     wallet: acceptDefaults ? (wallet ?? [...DEFAULT_OPTIONS.wallet]) : wallet,
     network: acceptDefaults ? (network ?? DEFAULT_OPTIONS.network) : network,
     packageManager: packageManager ?? (acceptDefaults ? detectPackageManager() : null),
   };
 
   if (opts.ci) process.env.HBAR_CI = "1";
+  if (acceptDefaults) process.env.HBAR_ACCEPT_DEFAULTS = "1";
   process.env.HBAR_LOG_LEVEL = logLevel;
 
   return { rawOptions, solidityFrameworkChoices };

@@ -39,6 +39,18 @@ const RenameEntrySchema = z.object({
   paths: z.array(z.string().min(1)).min(1),
 });
 
+const TemplateCapabilitiesSchema = z.object({
+  /** Allowed frontend options for this template. */
+  frontend: z.array(z.enum(["nextjs-app", "none"])).optional(),
+  /** Allowed solidity framework options for this template. */
+  solidityFramework: z.array(z.enum(["hardhat", "foundry", "none"])).optional(),
+});
+
+const TemplateDefaultsSchema = z.object({
+  frontend: z.enum(["nextjs-app", "none"]).optional(),
+  solidityFramework: z.enum(["hardhat", "foundry", "none"]).optional(),
+});
+
 /**
  * Zod schema for `template.json` manifests shipped with each starter template.
  * Validated at runtime after the template is downloaded/copied.
@@ -69,6 +81,10 @@ export const TemplateManifestSchema = z.object({
       requirements: z.record(z.string(), z.string()).optional(),
       /** Environment variables written into `.env.example`. */
       envVars: z.array(EnvVarSchema).optional(),
+      /** Template-specific prompt constraints used by the CLI. */
+      capabilities: TemplateCapabilitiesSchema.optional(),
+      /** Template-specific default values used when multiple options exist. */
+      defaults: TemplateDefaultsSchema.optional(),
     })
     .optional(),
 });

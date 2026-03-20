@@ -11,7 +11,6 @@ const mockSelect = vi.fn();
 const mockMultiselect = vi.fn();
 const mockConfirm = vi.fn();
 const mockCancel = vi.fn();
-const mockGroup = vi.fn();
 
 vi.mock("@clack/prompts", () => ({
   text: (...args: unknown[]): unknown => mockText(...args),
@@ -23,14 +22,6 @@ vi.mock("@clack/prompts", () => ({
   intro: vi.fn(),
   outro: vi.fn(),
   log: { info: vi.fn(), success: vi.fn(), warn: vi.fn(), error: vi.fn(), message: vi.fn(), step: vi.fn() },
-  group: async (prompts: Record<string, (...a: unknown[]) => unknown>, opts?: { onCancel?: () => void }) => {
-    mockGroup(prompts, opts);
-    const results: Record<string, unknown> = {};
-    for (const [key, fn] of Object.entries(prompts)) {
-      results[key] = await fn({ results });
-    }
-    return results;
-  },
 }));
 
 // ─── Mock detect package manager (avoid filesystem probe during tests) ───────
@@ -41,6 +32,14 @@ vi.mock("../../src/utils/parse-arguments-into-options", async importOriginal => 
     detectPackageManager: vi.fn().mockReturnValue("npm"),
   };
 });
+
+vi.mock("../../src/utils/template-capabilities", () => ({
+  resolveTemplateCapabilities: vi.fn().mockResolvedValue({
+    frontend: ["nextjs-app", "none"],
+    solidityFramework: ["foundry", "hardhat", "none"],
+    defaults: { frontend: "nextjs-app", solidityFramework: "foundry" },
+  }),
+}));
 
 // ─── Import the function under test AFTER mocks are registered ───────────────
 import { promptForMissingOptions } from "../../src/utils/prompt-for-missing-options";
@@ -75,7 +74,8 @@ describe("promptForMissingOptions", () => {
   });
 
   afterEach(() => {
-    vi.restoreAllMocks();
+    delete process.env.HBAR_ACCEPT_DEFAULTS;
+    delete process.env.HBAR_CI;
   });
 
   // ── Skipping prompts when value is pre-supplied ──────────────────────────
@@ -124,9 +124,10 @@ describe("promptForMissingOptions", () => {
 
   // ── All prompts active (no flags supplied) ───────────────────────────────
 
-  it("calls p.group when no flags are pre-supplied", async () => {
+  it("invokes interactive prompts when flags are not pre-supplied", async () => {
     await promptForMissingOptions(makeRawOptions());
-    expect(mockGroup).toHaveBeenCalledTimes(1);
+    expect(mockText).toHaveBeenCalledTimes(1);
+    expect(mockSelect).toHaveBeenCalled();
   });
 
   it("invokes text prompt for project name when not supplied", async () => {
@@ -165,27 +166,22 @@ describe("promptForMissingOptions", () => {
 
   // ── onCancel exits with 130 ──────────────────────────────────────────────
 
-  it("exits with CANCELLED code when onCancel fires", async () => {
+  it("exits with CANCELLED code when a prompt returns cancel", async () => {
     const exitSpy = vi.spyOn(process, "exit").mockImplementation(() => {
       throw new Error(`process.exit(${EXIT_CODES.CANCELLED})`);
     });
-
-    // Override group to immediately call onCancel
-    mockGroup.mockImplementationOnce((_prompts: unknown, opts: { onCancel?: () => void } | undefined) => {
-      opts?.onCancel?.();
-    });
-
-    // Re-mock group so our custom implementation is used
     const clack = await import("@clack/prompts");
-    const originalGroup = clack.group;
-    (clack as Record<string, unknown>).group = mockGroup;
+    const isCancelMock = clack.isCancel as unknown as ReturnType<typeof vi.fn>;
+    isCancelMock.mockReturnValueOnce(true);
+    mockText.mockResolvedValueOnce("__cancel__");
 
     try {
       await expect(promptForMissingOptions(makeRawOptions())).rejects.toThrow(`process.exit(${EXIT_CODES.CANCELLED})`);
       expect(mockCancel).toHaveBeenCalledWith("Scaffolding cancelled.");
       expect(exitSpy).toHaveBeenCalledWith(EXIT_CODES.CANCELLED);
     } finally {
-      (clack as Record<string, unknown>).group = originalGroup;
+      isCancelMock.mockReset();
+      isCancelMock.mockReturnValue(false);
       exitSpy.mockRestore();
     }
   });

@@ -35,6 +35,7 @@ describe("parseArgumentsIntoOptions", () => {
     exitSpy = mockProcessExit();
     // Reset env vars that the parser writes
     delete process.env.HBAR_CI;
+    delete process.env.HBAR_ACCEPT_DEFAULTS;
     delete process.env.HBAR_LOG_LEVEL;
   });
 
@@ -217,7 +218,7 @@ describe("parseArgumentsIntoOptions", () => {
       const { rawOptions } = parseArgumentsIntoOptions(args("--yes"));
       expect(rawOptions.project).toBe(DEFAULT_OPTIONS.project);
       expect(rawOptions.template).toBe(DEFAULT_OPTIONS.template);
-      expect(rawOptions.frontend).toBe(DEFAULT_OPTIONS.frontend);
+      expect(rawOptions.frontend).toBeNull();
       expect(rawOptions.network).toBe(DEFAULT_OPTIONS.network);
       expect(rawOptions.install).toBe(DEFAULT_OPTIONS.install);
     });

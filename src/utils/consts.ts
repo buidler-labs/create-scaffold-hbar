@@ -20,6 +20,38 @@ export const TEMPLATES = [
 /** Fallback when fetching template branches fails (e.g. offline). Same shape as TEMPLATES. */
 export const TEMPLATES_FALLBACK = TEMPLATES;
 
+/**
+ * Local fallback capabilities for well-known templates.
+ * Used when template manifest metadata can't be fetched.
+ */
+export const TEMPLATE_CAPABILITIES_FALLBACK: Record<
+  string,
+  {
+    frontend?: Array<"nextjs-app" | "none">;
+    solidityFramework?: Array<"foundry" | "hardhat" | "none">;
+    defaults?: {
+      frontend?: "nextjs-app" | "none";
+      solidityFramework?: "foundry" | "hardhat" | "none";
+    };
+  }
+> = {
+  blank: {
+    frontend: ["nextjs-app"],
+    solidityFramework: ["foundry", "hardhat"],
+    defaults: { frontend: "nextjs-app", solidityFramework: "foundry" },
+  },
+  "payments-scheduler": {
+    frontend: ["nextjs-app"],
+    solidityFramework: ["foundry"],
+    defaults: { frontend: "nextjs-app", solidityFramework: "foundry" },
+  },
+  "hedera-demo": {
+    frontend: ["nextjs-app"],
+    solidityFramework: ["none"],
+    defaults: { frontend: "nextjs-app", solidityFramework: "none" },
+  },
+};
+
 /** Frontend framework options. */
 export const FRONTENDS = [
   { value: "nextjs-app", label: "Next.js (App Router)" },
