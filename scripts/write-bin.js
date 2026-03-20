@@ -20,3 +20,4 @@ const binPath = path.join(binDir, "create-hbar.js");
 
 fs.mkdirSync(binDir, { recursive: true });
 fs.writeFileSync(binPath, content, "utf8");
+fs.chmodSync(binPath, 0o755);
