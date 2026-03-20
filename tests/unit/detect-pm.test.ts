@@ -1,5 +1,7 @@
 import { describe, it, expect, afterEach } from "vitest";
 import { tmpdir } from "os";
+import path from "path";
+import fs from "fs";
 import { detectPackageManager } from "../../src/utils/detect-pm";
 
 describe("detectPackageManager", () => {
@@ -31,11 +33,13 @@ describe("detectPackageManager", () => {
   it("falls back to npm when user agent is absent and no lockfiles", () => {
     delete process.env.npm_config_user_agent;
     const originalCwd = process.cwd();
-    process.chdir(tmpdir());
+    const isolatedTmpDir = fs.mkdtempSync(path.join(tmpdir(), "detect-pm-"));
+    process.chdir(isolatedTmpDir);
     try {
       expect(detectPackageManager()).toBe("npm");
     } finally {
       process.chdir(originalCwd);
+      fs.rmSync(isolatedTmpDir, { recursive: true, force: true });
     }
   });
 });

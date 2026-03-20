@@ -73,13 +73,9 @@ describe("TEMPLATES", () => {
     expect(TEMPLATES.map(t => t.value)).toContain("blank");
   });
 
-  it("includes all five built-in templates", () => {
+  it("defaults to a single built-in fallback template", () => {
     const values = TEMPLATES.map(t => t.value);
-    expect(values).toContain("blank");
-    expect(values).toContain("hts-fungible");
-    expect(values).toContain("hts-nft");
-    expect(values).toContain("hcs-dao");
-    expect(values).toContain("defi-swap");
+    expect(values).toEqual(["blank"]);
   });
 
   it("every template has a non-empty label", () => {
