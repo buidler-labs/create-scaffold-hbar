@@ -1,5 +1,5 @@
 /** Repo (owner/repo) used to fetch available template branches. Branches must match prefix. */
-export const TEMPLATE_REPO = "buidler-labs/scaffold-eth-2";
+export const TEMPLATE_REPO = "buidler-labs/scaffold-hbar";
 /** Branch name prefix for template branches, e.g. "templates/blank-template", "templates/hts-nft". */
 export const TEMPLATE_BRANCH_PREFIX = "templates/";
 
@@ -15,10 +15,6 @@ export const SOLIDITY_FRAMEWORKS = {
 /** Starter template options shown in the interactive select prompt (used when dynamic fetch fails). */
 export const TEMPLATES = [
   { value: "blank", label: "Blank Starter", hint: "minimal setup, no example contracts" },
-  { value: "hts-fungible", label: "Fungible Token (HTS)", hint: "deploy & manage HTS tokens" },
-  { value: "hts-nft", label: "NFT Collection", hint: "mint, list, transfer NFTs via HTS" },
-  { value: "hcs-dao", label: "DAO Governance", hint: "on-chain voting via Hedera Consensus Service" },
-  { value: "defi-swap", label: "DeFi Swap", hint: "AMM-style token exchange" },
 ] as const;
 
 /** Fallback when fetching template branches fails (e.g. offline). Same shape as TEMPLATES. */
