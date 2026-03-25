@@ -38,7 +38,7 @@ export const validateFoundry = async () => {
       const message = `
  ${chalk.bold.yellow("Foundry version is older than required.")}
  ${chalk.bold.yellow(`Current version: ${version}, required: >= ${REQUIRED_FOUNDRY_VERSION}`)}
- ${chalk.bold.yellow("Please update foundry by running: foundryup")}
+ ${chalk.bold.yellow("Update via: foundryup (official) or brew upgrade foundry (Homebrew)")}
  ${chalk.bold.yellow("Checkout: https://getfoundry.sh")}
     `;
       throw new FoundryValidationError(message);

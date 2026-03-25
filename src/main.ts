@@ -10,16 +10,10 @@ import { renderOutroMessage } from "./utils/render-outro-message";
 import chalk from "chalk";
 import { Listr } from "listr2";
 import path from "path";
-import { fileURLToPath } from "url";
-import { getArgumentFromExternalExtensionOption } from "./utils/external-extensions";
 import { SOLIDITY_FRAMEWORKS } from "./utils/consts";
 
 export async function createProject(options: Options) {
   console.log(`\n`);
-
-  const currentFileUrl = import.meta.url;
-
-  const templateDirectory = path.resolve(decodeURI(fileURLToPath(currentFileUrl)), "../../templates");
 
   const targetDirectory = path.resolve(process.cwd(), options.project);
 
@@ -30,14 +24,12 @@ export async function createProject(options: Options) {
         task: () => createProjectDirectory(options.project),
       },
       {
-        title: `🚀 Creating a new Scaffold-ETH 2 app in ${chalk.green.bold(
-          options.project,
-        )}${options.externalExtension ? ` with the ${chalk.green.bold(options.dev ? options.externalExtension : getArgumentFromExternalExtensionOption(options.externalExtension))} extension` : ""}`,
-        task: () => copyTemplateFiles(options, templateDirectory, targetDirectory),
+        title: `🚀 Creating a new Scaffold-HBAR app in ${chalk.green.bold(options.project)}`,
+        task: () => copyTemplateFiles(options, targetDirectory),
       },
       {
-        title: "📦 Installing dependencies with yarn, this could take a while",
-        task: (_, task) => installPackages(targetDirectory, task),
+        title: `📦 Installing dependencies with ${options.packageManager}, this could take a while`,
+        task: (_, task) => installPackages(targetDirectory, task, options.packageManager),
         skip: () => {
           if (!options.install) {
             return "Manually skipped, since `--skip-install` flag was passed";

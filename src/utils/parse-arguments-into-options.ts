@@ -1,150 +1,194 @@
-import type { Args, SolidityFramework, RawOptions, SolidityFrameworkChoices } from "../types";
-import arg from "arg";
-import { getSolidityFrameworkDirsFromExternalExtension, validateExternalExtension } from "./external-extensions";
+import type {
+  Args,
+  SolidityFramework,
+  RawOptions,
+  SolidityFrameworkChoices,
+  PackageManager,
+  Network,
+  Frontend,
+  Wallet,
+} from "../types";
+import { Command } from "commander";
 import chalk from "chalk";
-import { SOLIDITY_FRAMEWORKS } from "./consts";
+import {
+  SOLIDITY_FRAMEWORKS,
+  DEFAULT_OPTIONS,
+  EXIT_CODES,
+  FRONTENDS,
+  SOLIDITY_FRAMEWORK_OPTIONS,
+  WALLETS,
+  NETWORKS,
+  PACKAGE_MANAGERS,
+} from "./consts";
 import { validateNpmName } from "./validate-name";
-import { confirm } from "@inquirer/prompts";
+import { detectPackageManager } from "./detect-pm";
 import packageJson from "../../package.json";
-import { execa } from "execa";
 
-// TODO update smartContractFramework code with general extensions
-export async function parseArgumentsIntoOptions(
-  rawArgs: Args,
-): Promise<{ rawOptions: RawOptions; solidityFrameworkChoices: SolidityFrameworkChoices }> {
-  const args = arg(
-    {
-      "--skip-install": Boolean,
-      "--skip": "--skip-install",
+// ─── Valid enum values derived from consts (single source of truth) ───────────
+// Extracting .value from each option array means adding a new entry to consts.ts
+// automatically makes it valid here — no second edit needed.
 
-      "--dev": Boolean,
+const VALID_FRONTENDS = FRONTENDS.map(f => f.value) as readonly Frontend[];
+const VALID_SOLIDITY_FRAMEWORKS = SOLIDITY_FRAMEWORK_OPTIONS.map(s => s.value) as readonly (
+  | SolidityFramework
+  | "none"
+)[];
+const VALID_WALLETS = WALLETS.map(w => w.value) as readonly Wallet[];
+const VALID_NETWORKS = NETWORKS.map(n => n.value) as readonly Network[];
+const VALID_PACKAGE_MANAGERS = PACKAGE_MANAGERS.map(pm => pm.value) as readonly PackageManager[];
+const VALID_LOG_LEVELS = ["error", "warn", "info", "verbose", "debug"] as const;
 
-      "--solidity-framework": solidityFrameworkHandler,
-      "-s": "--solidity-framework",
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
-      "--extension": String,
-      "-e": "--extension",
+/**
+ * Prints an error message and exits with BAD_ARGS (exit code 2).
+ * Used for invalid flag values caught at parse time.
+ */
+function exitWithBadArgs(message: string): never {
+  console.error(chalk.red(`\nError: ${message}`));
+  console.error(chalk.gray(`Run with --help to see available options.\n`));
+  process.exit(EXIT_CODES.BAD_ARGS);
+}
 
-      "--help": Boolean,
-      "-h": "--help",
-    },
-    {
-      argv: rawArgs.slice(2),
-    },
-  );
-
-  const skipInstall = args["--skip-install"] ?? null;
-
-  const dev = args["--dev"] ?? false; // info: use false avoid asking user
-
-  const help = args["--help"] ?? false;
-
-  let project: string | null = args._[0] ?? null;
-
-  // use the original extension arg
-  const extensionName = args["--extension"];
-  // ToDo. Allow multiple
-  const extension = extensionName ? await validateExternalExtension(extensionName, dev) : null;
-
-  // if dev mode, extension would be a string
-  if (extension && typeof extension === "object" && !extension.isTrusted) {
-    console.log(
-      chalk.yellow(
-        ` You are using a third-party extension. Make sure you trust the source of ${chalk.yellow.bold(
-          extension.repository,
-        )}\n`,
-      ),
-    );
+/**
+ * Validates that a flag value belongs to an allowed set.
+ * Exits with code 2 if the value is not in the list.
+ */
+function validateEnum<T extends string>(value: string, allowed: readonly T[], flagName: string): T {
+  const lower = value.toLowerCase() as T;
+  if (!allowed.includes(lower)) {
+    exitWithBadArgs(`"${value}" is not a valid value for --${flagName}. Allowed: ${allowed.join(", ")}`);
   }
+  return lower;
+}
 
-  // Check if extension createEthVersion matches current version
-  if (extension && typeof extension === "object" && extension.recommendedCreateEthVersion) {
-    const currentVersion = packageJson.version;
+export { detectPackageManager } from "./detect-pm";
 
-    if (extension.recommendedCreateEthVersion !== currentVersion) {
-      console.log(
-        chalk.yellow(
-          `\n⚠️  This extension requires create-eth ${chalk.bold(`v${extension.recommendedCreateEthVersion}`)}, but you're running ${chalk.bold(`v${currentVersion}`)}.\n`,
-        ),
-      );
+/**
+ * Parses CLI arguments using commander and returns raw (pre-prompt) options.
+ */
+export function parseArgumentsIntoOptions(rawArgs: Args): {
+  rawOptions: RawOptions;
+  solidityFrameworkChoices: SolidityFrameworkChoices;
+} {
+  const program = new Command();
 
-      const switchVersion = await confirm({
-        message: `Would you like to run with the correct version (${extension.recommendedCreateEthVersion})?`,
-        default: true,
-      });
+  program
+    .name("create-hbar")
+    .description("Scaffold a Hedera dApp project")
+    .version(packageJson.version, "-v, --version", "Print CLI version and exit")
+    .argument("[project-name]", "Name / path of the project directory to create")
+    .option("-d, --destination <path>", "Output directory (alternative to positional arg)")
+    .option("-t, --template <template>", "Starter template key or GitHub org/repo")
+    .option("-f, --frontend <framework>", "Frontend framework (nextjs-app|none)")
+    .option("-s, --solidity-framework <fw>", "Solidity framework (foundry|hardhat|none)")
+    .option("-w, --wallet <wallets>", "Wallet connector(s), comma-separated (walletconnect,metamask)")
+    .option("--network <network>", "Target network (testnet|mainnet)")
+    .option("--use-npm", "Use npm as package manager")
+    .option("-p, --use-pnpm", "Use pnpm as package manager")
+    .option("--use-yarn", "Use yarn as package manager")
+    .option("--skip-install", "Skip dependency installation")
+    .option("-y, --yes", "Accept all defaults and skip all prompts")
+    .option("--ci", "CI mode: non-interactive, structured log output, no TTY color")
+    .option("--log-level <level>", "Log verbosity (error|warn|info|verbose|debug)", "info")
+    .helpOption("-h, --help", "Display help text and exit")
+    // Prevent commander from calling process.exit on unknown options so we
+    // can surface a friendlier BAD_ARGS message ourselves.
+    .allowUnknownOption(false)
+    .exitOverride();
 
-      if (switchVersion) {
-        console.log(chalk.gray(`\nSwitching to create-eth@${extension.recommendedCreateEthVersion}...\n`));
-
-        await execa("npx", [`create-eth@${extension.recommendedCreateEthVersion}`, ...rawArgs.slice(2)], {
-          stdio: "inherit",
-        });
-
-        process.exit(0);
-      }
-
-      const proceed = await confirm({
-        message: "Do you want to proceed with the current version anyway?",
-        default: false,
-      });
-
-      if (!proceed) {
-        console.log(chalk.gray("\nSetup cancelled. No project was created"));
-        process.exit(0);
-      }
+  try {
+    program.parse(rawArgs);
+  } catch (err: any) {
+    // commander throws CommanderError for --help / --version (exit code 0)
+    // and for unknown options (exit code 1). Re-map parse errors to BAD_ARGS.
+    if (err?.code === "commander.helpDisplayed" || err?.code === "commander.version") {
+      process.exit(EXIT_CODES.SUCCESS);
     }
+    exitWithBadArgs(err?.message ?? "Invalid arguments");
   }
 
+  const opts = program.opts();
+  const [positionalName] = program.args;
+
+  // ── Resolve project name: destination flag > positional arg ──────────────
+  const rawProject: string | null = (opts.destination as string | undefined) ?? positionalName ?? null;
+
+  let project: string | null = rawProject;
   if (project) {
     const validation = validateNpmName(project);
     if (!validation.valid) {
-      console.error(
-        `Could not create a project called ${chalk.yellow(`"${project}"`)} because of naming restrictions:`,
-      );
-
-      validation.problems.forEach(p => console.error(`${chalk.red(">>")} Project ${p}`));
+      console.error(chalk.red(`\nCould not create a project called ${chalk.yellow(`"${project}"`)}`));
+      validation.problems.forEach((prob: string) => console.error(chalk.red(`  >> ${prob}`)));
       project = null;
     }
   }
 
-  let solidityFrameworkChoices = [
+  // ── Template: community (org/repo) pass-through, or built-in name (any templates/* branch name) ──
+  let template: string | null = null;
+  if (opts.template) {
+    const raw = (opts.template as string).trim();
+    if (raw.includes("/")) {
+      template = raw; // community template: org/repo or org/repo#branch
+    } else if (raw.length > 0) {
+      template = raw; // built-in: resolved to repo#templates/<name> later; no hardcoded list
+    } else {
+      exitWithBadArgs("Template name cannot be empty.");
+    }
+  }
+
+  const frontend = opts.frontend ? validateEnum(opts.frontend as string, VALID_FRONTENDS, "frontend") : null;
+
+  const solidityFrameworkRaw = opts.solidityFramework
+    ? validateEnum(opts.solidityFramework as string, VALID_SOLIDITY_FRAMEWORKS, "solidity-framework")
+    : null;
+
+  const network = opts.network ? validateEnum(opts.network as string, VALID_NETWORKS, "network") : null;
+
+  const logLevel = validateEnum(opts.logLevel as string, VALID_LOG_LEVELS, "log-level");
+
+  // ── Resolve wallet (comma-separated multiselect) ──────────────────────────
+  const wallet: Wallet[] | null = opts.wallet
+    ? (opts.wallet as string).split(",").map((w: string) => validateEnum(w.trim(), VALID_WALLETS, "wallet"))
+    : null;
+
+  // ── Resolve package manager (explicit flags take priority over detection) ──
+  let packageManager: PackageManager | null = null;
+  const pmFlagCount = [opts.useNpm, opts.usePnpm, opts.useYarn].filter(Boolean).length;
+  if (pmFlagCount > 1) {
+    exitWithBadArgs("Only one package manager flag may be specified at a time (--use-npm, --use-pnpm, --use-yarn)");
+  }
+  if (opts.useNpm) packageManager = validateEnum("npm", VALID_PACKAGE_MANAGERS, "use-npm");
+  else if (opts.usePnpm) packageManager = validateEnum("pnpm", VALID_PACKAGE_MANAGERS, "use-pnpm");
+  else if (opts.useYarn) packageManager = validateEnum("yarn", VALID_PACKAGE_MANAGERS, "use-yarn");
+
+  // ── --ci implies --yes ────────────────────────────────────────────────────
+  const acceptDefaults = Boolean(opts.yes) || Boolean(opts.ci);
+
+  const solidityFrameworkChoices: SolidityFrameworkChoices = [
     SOLIDITY_FRAMEWORKS.HARDHAT,
     SOLIDITY_FRAMEWORKS.FOUNDRY,
     { value: null, name: "none" },
   ];
 
-  if (extension) {
-    const externalExtensionSolidityFrameworkDirs = await getSolidityFrameworkDirsFromExternalExtension(extension);
+  const solidityFramework: SolidityFramework | "none" | null = solidityFrameworkRaw;
 
-    if (externalExtensionSolidityFrameworkDirs.length !== 0) {
-      solidityFrameworkChoices = externalExtensionSolidityFrameworkDirs;
-    }
-  }
-
-  // if length is 1, we don't give user a choice and set it ourselves.
-  const solidityFramework =
-    solidityFrameworkChoices.length === 1 ? solidityFrameworkChoices[0] : (args["--solidity-framework"] ?? null);
-
-  return {
-    rawOptions: {
-      project,
-      install: !skipInstall,
-      dev,
-      externalExtension: extension,
-      help,
-      solidityFramework: solidityFramework as RawOptions["solidityFramework"],
-    },
-    solidityFrameworkChoices,
+  // ── Apply --yes / --ci defaults for any still-null fields ─────────────────
+  const rawOptions: RawOptions = {
+    project: acceptDefaults ? (project ?? DEFAULT_OPTIONS.project) : project,
+    install: opts.skipInstall ? false : acceptDefaults ? DEFAULT_OPTIONS.install : true,
+    help: false, // --help is handled by commander before we reach here
+    solidityFramework,
+    template: acceptDefaults ? (template ?? DEFAULT_OPTIONS.template) : template,
+    frontend,
+    wallet: acceptDefaults ? (wallet ?? [...DEFAULT_OPTIONS.wallet]) : wallet,
+    network: acceptDefaults ? (network ?? DEFAULT_OPTIONS.network) : network,
+    packageManager: packageManager ?? (acceptDefaults ? detectPackageManager() : null),
   };
-}
 
-const SOLIDITY_FRAMEWORK_OPTIONS = [...Object.values(SOLIDITY_FRAMEWORKS), "none"];
-function solidityFrameworkHandler(value: string) {
-  const lowercasedValue = value.toLowerCase();
-  if (SOLIDITY_FRAMEWORK_OPTIONS.includes(lowercasedValue)) {
-    return lowercasedValue as SolidityFramework | "none";
-  }
+  if (opts.ci) process.env.HBAR_CI = "1";
+  if (acceptDefaults) process.env.HBAR_ACCEPT_DEFAULTS = "1";
+  process.env.HBAR_LOG_LEVEL = logLevel;
 
-  // choose from cli prompts
-  return null;
+  return { rawOptions, solidityFrameworkChoices };
 }
