@@ -128,8 +128,8 @@ function filterRootPackageJson(
         scripts["format"] = "yarn hardhat:format";
         scripts["lint"] = "yarn hardhat:lint";
       } else if (selectedFramework === SOLIDITY_FRAMEWORKS.FOUNDRY) {
-        scripts["format"] = "yarn workspace @se-2/foundry format";
-        scripts["lint"] = "yarn workspace @se-2/foundry lint";
+        scripts["format"] = "yarn workspace @sh/foundry format";
+        scripts["lint"] = "yarn workspace @sh/foundry lint";
       } else {
         delete scripts["format"];
         delete scripts["lint"];
@@ -141,25 +141,32 @@ function filterRootPackageJson(
         delete scripts[key];
       }
     }
-    if (selectedFramework) {
-      for (const key of Object.keys(scripts)) {
+    for (const key of Object.keys(scripts)) {
+      if (typeof scripts[key] !== "string") continue;
+
+      // If a framework is selected, remap top-level "yarn hardhat:*"/"yarn foundry:*"
+      // commands to the selected one.
+      if (selectedFramework) {
         for (const sf of unselected) {
           const prefix = `yarn ${sf}:`;
-          if (typeof scripts[key] === "string" && scripts[key].startsWith(prefix)) {
+          if (scripts[key].startsWith(prefix)) {
             const sub = scripts[key].slice(prefix.length);
             scripts[key] = `yarn ${selectedFramework}:${sub}`;
           }
         }
       }
-      for (const key of Object.keys(scripts)) {
-        if (typeof scripts[key] === "string") {
-          for (const sf of unselected) {
-            scripts[key] = scripts[key]
-              .replace(new RegExp(`\\s*&&\\s*yarn ${sf}:[^\\s&]+`, "g"), "")
-              .replace(new RegExp(`yarn ${sf}:[^\\s&]+\\s*&&\\s*`, "g"), "")
-              .trim();
-          }
-        }
+
+      // Always strip command segments for unselected frameworks. This must also
+      // run when selectedFramework is null (e.g. templates that default to "none").
+      for (const sf of unselected) {
+        scripts[key] = scripts[key]
+          .replace(new RegExp(`\\s*&&\\s*yarn ${sf}:[^\\s&]+`, "g"), "")
+          .replace(new RegExp(`yarn ${sf}:[^\\s&]+\\s*&&\\s*`, "g"), "")
+          .trim();
+      }
+
+      if (scripts[key] === "") {
+        delete scripts[key];
       }
     }
   }

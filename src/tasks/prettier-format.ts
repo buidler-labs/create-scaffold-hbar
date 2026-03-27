@@ -10,7 +10,7 @@ export async function prettierFormat(targetDir: string): Promise<void> {
     }
   } catch (error) {
     // Format can fail when workspace layout doesn't match (e.g. solidity "none" + base only
-    // has no @se-2/nextjs). Log and continue so the scaffold still completes.
+    // has no @sh/nextjs). Log and continue so the scaffold still completes.
     console.warn(
       chalk.yellow("\n⚠ Format step failed (project was still created):"),
       error instanceof Error ? error.message : String(error),
