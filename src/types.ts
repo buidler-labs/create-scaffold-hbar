@@ -9,7 +9,7 @@ export type PackageManager = "npm" | "pnpm" | "yarn";
 export type Network = "testnet" | "mainnet";
 
 /** Built-in starter templates. Also accepts `"org/repo"` strings for community templates. */
-export type Template = "blank" | "hts-fungible" | "hts-nft" | "hcs-dao" | "defi-swap";
+export type Template = "blank" | "hts-fungible" | "payments-scheduler" | "hcs-dao" | "defi-swap";
 
 /** Frontend framework. "none" = contracts only (Hardhat or Foundry). */
 export type Frontend = "nextjs-app" | "none";

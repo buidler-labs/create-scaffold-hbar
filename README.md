@@ -114,7 +114,7 @@ node bin/create-hbar.js --yes --skip-install --solidity-framework none
 node bin/create-hbar.js --yes --skip-install --solidity-framework hardhat
 
 # Custom project name and template
-node bin/create-hbar.js my-hts-app --template hts-nft --frontend nextjs-app --skip-install
+node bin/create-hbar.js my-hts-app --template payments-scheduler --frontend nextjs-app --skip-install
 
 # See all options
 node bin/create-hbar.js --help
@@ -131,21 +131,21 @@ node /path/to/create-hbar/bin/create-hbar.js --yes --skip-install my-hedera-dapp
 
 ## CLI options
 
-| Option                                      | Description                                     |
-| ------------------------------------------- | ----------------------------------------------- |
-| `[project-name]`                            | Project directory name (or use `--destination`) |
-| `-d, --destination <path>`                  | Output path instead of positional name          |
-| `-t, --template <key>`                      | Built-in (`blank`, `hts-nft`, …) or `org/repo`  |
-| `-f, --frontend <fw>`                       | `nextjs-app` \| `none` (contracts only)         |
-| `-s, --solidity-framework <fw>`             | `foundry` \| `hardhat` \| `none`                |
-| `-w, --wallet <list>`                       | `rainbowkit`                                    |
-| `--network <network>`                       | `testnet` \| `mainnet`                          |
-| `--use-npm` \| `--use-pnpm` \| `--use-yarn` | Force package manager                           |
-| `--skip-install`                            | Don’t run install after scaffolding             |
-| `-y, --yes`                                 | Use defaults for all prompts (non-interactive)  |
-| `--ci`                                      | CI mode (implies `--yes`, structured output)    |
-| `-h, --help`                                | Show help                                       |
-| `-v, --version`                             | Show version                                    |
+| Option                                      | Description                                               |
+| ------------------------------------------- | --------------------------------------------------------- |
+| `[project-name]`                            | Project directory name (or use `--destination`)           |
+| `-d, --destination <path>`                  | Output path instead of positional name                    |
+| `-t, --template <key>`                      | Built-in (`blank`, `payments-scheduler`, …) or `org/repo` |
+| `-f, --frontend <fw>`                       | `nextjs-app` \| `none` (contracts only)                   |
+| `-s, --solidity-framework <fw>`             | `foundry` \| `hardhat` \| `none`                          |
+| `-w, --wallet <list>`                       | `rainbowkit`                                              |
+| `--network <network>`                       | `testnet` \| `mainnet`                                    |
+| `--use-npm` \| `--use-pnpm` \| `--use-yarn` | Force package manager                                     |
+| `--skip-install`                            | Don’t run install after scaffolding                       |
+| `-y, --yes`                                 | Use defaults for all prompts (non-interactive)            |
+| `--ci`                                      | CI mode (implies `--yes`, structured output)              |
+| `-h, --help`                                | Show help                                                 |
+| `-v, --version`                             | Show version                                              |
 
 ---
 

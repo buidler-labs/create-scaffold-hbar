@@ -75,8 +75,8 @@ describe("parseArgumentsIntoOptions", () => {
 
   describe("--template / -t", () => {
     it("sets template to a built-in key", () => {
-      const { rawOptions } = parseArgumentsIntoOptions(args("--template", "hts-nft"));
-      expect(rawOptions.template).toBe("hts-nft");
+      const { rawOptions } = parseArgumentsIntoOptions(args("--template", "payments-scheduler"));
+      expect(rawOptions.template).toBe("payments-scheduler");
     });
 
     it("-t short alias works", () => {
@@ -90,8 +90,8 @@ describe("parseArgumentsIntoOptions", () => {
     });
 
     it("accepts any template name (no hardcoded list validation)", () => {
-      const { rawOptions } = parseArgumentsIntoOptions(args("--template", "ethereum-nft"));
-      expect(rawOptions.template).toBe("ethereum-nft");
+      const { rawOptions } = parseArgumentsIntoOptions(args("--template", "hedera-nft"));
+      expect(rawOptions.template).toBe("hedera-nft");
     });
 
     it("leaves template null when flag is omitted", () => {
@@ -224,8 +224,10 @@ describe("parseArgumentsIntoOptions", () => {
     });
 
     it("explicit flags win over --yes defaults", () => {
-      const { rawOptions } = parseArgumentsIntoOptions(args("--yes", "--template", "hts-nft", "--network", "mainnet"));
-      expect(rawOptions.template).toBe("hts-nft");
+      const { rawOptions } = parseArgumentsIntoOptions(
+        args("--yes", "--template", "payments-scheduler", "--network", "mainnet"),
+      );
+      expect(rawOptions.template).toBe("payments-scheduler");
       expect(rawOptions.network).toBe("mainnet");
     });
 

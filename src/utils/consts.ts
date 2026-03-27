@@ -1,6 +1,6 @@
 /** Repo (owner/repo) used to fetch available template branches. Branches must match prefix. */
 export const TEMPLATE_REPO = "buidler-labs/scaffold-hbar";
-/** Branch name prefix for template branches, e.g. "templates/blank-template", "templates/hts-nft". */
+/** Branch name prefix for template branches, e.g. "templates/blank-template", "templates/payments-scheduler". */
 export const TEMPLATE_BRANCH_PREFIX = "templates/";
 
 /**

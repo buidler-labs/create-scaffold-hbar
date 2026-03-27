@@ -87,8 +87,8 @@ describe("promptForMissingOptions", () => {
   });
 
   it("skips template prompt when template is pre-supplied", async () => {
-    const result = await promptForMissingOptions(makeRawOptions({ template: "hts-nft" }));
-    expect(result.template).toBe("hts-nft");
+    const result = await promptForMissingOptions(makeRawOptions({ template: "payments-scheduler" }));
+    expect(result.template).toBe("payments-scheduler");
   });
 
   it("skips frontend prompt when frontend is pre-supplied", async () => {

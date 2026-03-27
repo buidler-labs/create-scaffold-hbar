@@ -1,18 +1,18 @@
-# Welcome to create-eth Contributing Guide
+# Welcome to create-hbar Contributing Guide
 
-Thank you for investing your time in contributing to create-eth!
+Thank you for investing your time in contributing to create-hbar!
 
 This guide aims to provide an overview of the contribution workflow to help us make the contribution process effective for everyone involved.
 
 ## About the Project
 
-create-eth is a CLI tool to create a minimal repo to build decentralized applications on Ethereum, providing builders with a starter kit based on Scaffold-ETH 2.
+create-hbar is a CLI tool to create a minimal repo to build decentralized applications on Hedera, providing builders with a starter kit based on Scaffold-HBAR.
 
 Read the [README](README.md) to get an overview of the project.
 
 ### Vision
 
-The goal of create-eth is to be a "toolkit creator", using Scaffold-ETH 2 as a base to provide the primary building blocks for a decentralized application. In the future we plan to add "curated" packages to it, and open the possibility to import 3rd party packages (that follow our standard).
+The goal of create-hbar is to be a "toolkit creator", using Scaffold-HBAR as a base to provide the primary building blocks for a decentralized application. We also support the possibility to import 3rd party packages (that follow our standard).
 
 The repo can be forked to include integrations and more features, but we want to keep the `main` branch simple and minimal.
 
@@ -43,7 +43,6 @@ Contributions are made via Issues and Pull Requests (PRs). A few general guideli
 - If you're running into an error, please give context. Explain what you're trying to do and how to reproduce the error.
 - Please use the same formatting in the code repository. You can configure your IDE to do it by using the prettier / linting config files included in each package.
 - If applicable, please edit the README.md file to reflect the changes.
-- If you're adding a new template file or modifying arguments of existing templates, please create a corresponding PR to the [Example Extension branch](https://github.com/scaffold-eth/create-eth-extensions/tree/example) of the [create-eth-extensions](https://github.com/scaffold-eth/create-eth-extensions) repository
 
 ### Issues
 
@@ -79,9 +78,7 @@ We follow the ["fork-and-pull" Git workflow](https://github.com/susam/gitpr)
 6. Push changes to your fork
 7. Open a PR in our repository and tag one of the maintainers to review your PR
 
-> ⚠️ **Important.** Please make sure to choose **create-eth** repo when you create your branch and compare your changes.
->
-> This repo is a fork of Scaffold-ETH 2, and it may appear as default repo when creating a branch or PR.
+> ⚠️ **Important.** Please make sure to choose **create-hbar** repo when you create your branch and compare your changes.
 
 Here are some tips for a high-quality pull request:
 
@@ -115,4 +112,4 @@ If your PR is making changes to an area that already has a changeset (e.g. there
 
 ## Developer Guide
 
-You can find a detailed guide on [`contributors/DEVELOPER-GUIDE.md`](contributors/DEVELOPER-GUIDE.md)
+You can find a detailed guide on `[contributors/DEVELOPER-GUIDE.md](contributors/DEVELOPER-GUIDE.md)`

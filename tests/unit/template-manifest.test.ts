@@ -7,7 +7,7 @@ import { generateEnvExample } from "../../src/tasks/generate-env-example";
 import { TemplateManifestSchema } from "../../src/types";
 
 const fixtureManifest = {
-  name: "hts-nft",
+  name: "payments-scheduler",
   description: "NFT Collection template",
   version: "1.0.0",
   "create-hbar": {

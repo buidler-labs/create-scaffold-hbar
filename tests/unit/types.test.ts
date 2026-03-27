@@ -2,11 +2,11 @@ import { describe, it, expect } from "vitest";
 import { TemplateManifestSchema } from "../../src/types";
 
 const minimalManifest = {
-  name: "hts-nft",
+  name: "payments-scheduler",
 };
 
 const fullManifest = {
-  name: "hts-nft",
+  name: "payments-scheduler",
   description: "NFT Collection template using Hedera Token Service",
   version: "1.0.0",
   "create-hbar": {
