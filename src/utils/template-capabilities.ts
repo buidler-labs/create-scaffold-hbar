@@ -24,8 +24,8 @@ function branchNameForTemplate(template: string): string {
 }
 
 function fromManifest(manifest: TemplateManifest): TemplateCapabilities | null {
-  const capabilities = manifest["create-hbar"]?.capabilities;
-  const defaults = manifest["create-hbar"]?.defaults;
+  const capabilities = manifest["create-scaffold-hbar"]?.capabilities;
+  const defaults = manifest["create-scaffold-hbar"]?.defaults;
   if (!capabilities && !defaults) return null;
 
   return {

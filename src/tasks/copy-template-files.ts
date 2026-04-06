@@ -24,13 +24,13 @@ function processTemplateManifest(projectDir: string, projectName: string): void 
 
   const raw = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
   const manifest = TemplateManifestSchema.parse(raw);
-  const createHbar = manifest["create-hbar"];
+  const createScaffoldHbar = manifest["create-scaffold-hbar"];
 
-  if (createHbar?.rename) {
-    applyRenameMap(projectDir, createHbar.rename, projectName);
+  if (createScaffoldHbar?.rename) {
+    applyRenameMap(projectDir, createScaffoldHbar.rename, projectName);
   }
-  if (createHbar?.envVars?.length) {
-    generateEnvExample(projectDir, createHbar.envVars);
+  if (createScaffoldHbar?.envVars?.length) {
+    generateEnvExample(projectDir, createScaffoldHbar.envVars);
   }
 
   fs.unlinkSync(manifestPath);
@@ -181,7 +181,7 @@ function filterRootPackageJson(
  */
 export async function copyTemplateFiles(options: Options, targetDir: string): Promise<void> {
   const spec = getTemplateSpec(options.template as string);
-  const tmpDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), "create-hbar-"));
+  const tmpDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), "create-scaffold-hbar-"));
 
   try {
     await downloadTemplate(`gh:${spec}`, { dir: tmpDir });

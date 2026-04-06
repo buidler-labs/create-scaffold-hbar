@@ -9,7 +9,7 @@ const fullManifest = {
   name: "payments-scheduler",
   description: "NFT Collection template using Hedera Token Service",
   version: "1.0.0",
-  "create-hbar": {
+  "create-scaffold-hbar": {
     rename: {
       HtsNftTemplate: {
         to: "{{projectName}}",
@@ -40,12 +40,22 @@ describe("TemplateManifestSchema", () => {
       expect(result.success).toBe(true);
     });
 
-    it("accepts a manifest without a create-hbar block", () => {
+    it("accepts a manifest without a create-scaffold-hbar block", () => {
       const result = TemplateManifestSchema.safeParse({ name: "blank" });
       expect(result.success).toBe(true);
     });
 
-    it("accepts a create-hbar block with only envVars", () => {
+    it("accepts a create-scaffold-hbar block with only envVars", () => {
+      const result = TemplateManifestSchema.safeParse({
+        name: "blank",
+        "create-scaffold-hbar": {
+          envVars: [{ key: "HEDERA_ACCOUNT_ID", description: "Account ID" }],
+        },
+      });
+      expect(result.success).toBe(true);
+    });
+
+    it("maps legacy create-hbar manifest key to create-scaffold-hbar", () => {
       const result = TemplateManifestSchema.safeParse({
         name: "blank",
         "create-hbar": {
@@ -53,13 +63,15 @@ describe("TemplateManifestSchema", () => {
         },
       });
       expect(result.success).toBe(true);
+      if (!result.success) return;
+      expect(result.data["create-scaffold-hbar"]?.envVars).toHaveLength(1);
     });
 
     it("preserves rename entry structure on parse", () => {
       const result = TemplateManifestSchema.safeParse(fullManifest);
       expect(result.success).toBe(true);
       if (!result.success) return;
-      const renameEntry = result.data["create-hbar"]?.rename?.["HtsNftTemplate"];
+      const renameEntry = result.data["create-scaffold-hbar"]?.rename?.["HtsNftTemplate"];
       expect(renameEntry?.to).toBe("{{projectName}}");
       expect(renameEntry?.paths).toEqual(["contracts", "frontend/src"]);
     });
@@ -79,7 +91,7 @@ describe("TemplateManifestSchema", () => {
     it("rejects an envVar entry missing a key", () => {
       const result = TemplateManifestSchema.safeParse({
         name: "test",
-        "create-hbar": {
+        "create-scaffold-hbar": {
           envVars: [{ description: "missing key field" }],
         },
       });
@@ -89,7 +101,7 @@ describe("TemplateManifestSchema", () => {
     it("rejects an envVar entry with an empty key", () => {
       const result = TemplateManifestSchema.safeParse({
         name: "test",
-        "create-hbar": {
+        "create-scaffold-hbar": {
           envVars: [{ key: "", description: "empty key" }],
         },
       });
@@ -99,7 +111,7 @@ describe("TemplateManifestSchema", () => {
     it("rejects a rename entry with an empty paths array", () => {
       const result = TemplateManifestSchema.safeParse({
         name: "test",
-        "create-hbar": {
+        "create-scaffold-hbar": {
           rename: {
             Placeholder: { to: "{{projectName}}", paths: [] },
           },
@@ -111,7 +123,7 @@ describe("TemplateManifestSchema", () => {
     it("rejects a rename entry with an empty 'to' string", () => {
       const result = TemplateManifestSchema.safeParse({
         name: "test",
-        "create-hbar": {
+        "create-scaffold-hbar": {
           rename: {
             Placeholder: { to: "", paths: ["contracts"] },
           },
@@ -126,7 +138,7 @@ describe("TemplateManifestSchema", () => {
       const result = TemplateManifestSchema.safeParse(fullManifest);
       expect(result.success).toBe(true);
       if (!result.success) return;
-      const envVars = result.data["create-hbar"]?.envVars ?? [];
+      const envVars = result.data["create-scaffold-hbar"]?.envVars ?? [];
       expect(envVars[0].key).toBe("HEDERA_ACCOUNT_ID");
       expect(envVars[1].key).toBe("HEDERA_PRIVATE_KEY");
       expect(envVars[2].key).toBe("HEDERA_NETWORK");
@@ -136,7 +148,7 @@ describe("TemplateManifestSchema", () => {
       const result = TemplateManifestSchema.safeParse(fullManifest);
       expect(result.success).toBe(true);
       if (!result.success) return;
-      const instructions = result.data["create-hbar"]?.instructions ?? [];
+      const instructions = result.data["create-scaffold-hbar"]?.instructions ?? [];
       expect(instructions).toHaveLength(3);
       expect(instructions[0]).toBe("Get free testnet HBAR at: https://portal.hedera.com");
     });

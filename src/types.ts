@@ -51,43 +51,61 @@ const TemplateDefaultsSchema = z.object({
   solidityFramework: z.enum(["hardhat", "foundry", "none"]).optional(),
 });
 
+const TemplateManifestBlockSchema = z.object({
+  /**
+   * Token replacement map.
+   * Keys are placeholder strings in template files; values describe what
+   * to replace them with and which paths to scan.
+   */
+  rename: z.record(z.string(), RenameEntrySchema).optional(),
+  /**
+   * Post-scaffold instructions printed in the outro.
+   * Lines starting with `+` are rendered bold.
+   * `{pm}` is replaced with the detected package manager name.
+   */
+  instructions: z.array(z.string()).optional(),
+  /**
+   * Minimum version requirements for external tools.
+   * Keys are tool names (e.g. `node`, `hedera-local-node`),
+   * values are semver ranges (e.g. `>=18.0.0`).
+   */
+  requirements: z.record(z.string(), z.string()).optional(),
+  /** Environment variables written into `.env.example`. */
+  envVars: z.array(EnvVarSchema).optional(),
+  /** Template-specific prompt constraints used by the CLI. */
+  capabilities: TemplateCapabilitiesSchema.optional(),
+  /** Template-specific default values used when multiple options exist. */
+  defaults: TemplateDefaultsSchema.optional(),
+});
+
+function normalizeTemplateManifestRaw(raw: unknown): unknown {
+  if (!raw || typeof raw !== "object") return raw;
+  const o = { ...(raw as Record<string, unknown>) };
+  if ("create-hbar" in o) {
+    if (!("create-scaffold-hbar" in o)) {
+      o["create-scaffold-hbar"] = o["create-hbar"];
+    }
+    delete o["create-hbar"];
+  }
+  return o;
+}
+
 /**
  * Zod schema for `template.json` manifests shipped with each starter template.
  * Validated at runtime after the template is downloaded/copied.
+ *
+ * Legacy manifests may use the `create-hbar` key; it is normalized to
+ * `create-scaffold-hbar` before validation.
  */
-export const TemplateManifestSchema = z.object({
-  name: z.string().min(1),
-  description: z.string().optional(),
-  version: z.string().optional(),
-  "create-hbar": z
-    .object({
-      /**
-       * Token replacement map.
-       * Keys are placeholder strings in template files; values describe what
-       * to replace them with and which paths to scan.
-       */
-      rename: z.record(z.string(), RenameEntrySchema).optional(),
-      /**
-       * Post-scaffold instructions printed in the outro.
-       * Lines starting with `+` are rendered bold.
-       * `{pm}` is replaced with the detected package manager name.
-       */
-      instructions: z.array(z.string()).optional(),
-      /**
-       * Minimum version requirements for external tools.
-       * Keys are tool names (e.g. `node`, `hedera-local-node`),
-       * values are semver ranges (e.g. `>=18.0.0`).
-       */
-      requirements: z.record(z.string(), z.string()).optional(),
-      /** Environment variables written into `.env.example`. */
-      envVars: z.array(EnvVarSchema).optional(),
-      /** Template-specific prompt constraints used by the CLI. */
-      capabilities: TemplateCapabilitiesSchema.optional(),
-      /** Template-specific default values used when multiple options exist. */
-      defaults: TemplateDefaultsSchema.optional(),
-    })
-    .optional(),
-});
+export const TemplateManifestSchema = z.preprocess(
+  normalizeTemplateManifestRaw,
+  z.object({
+    name: z.string().min(1),
+    description: z.string().optional(),
+    version: z.string().optional(),
+    "create-scaffold-hbar": TemplateManifestBlockSchema.optional(),
+  }),
+);
 
 /** Inferred TypeScript type from TemplateManifestSchema. */
 export type TemplateManifest = z.infer<typeof TemplateManifestSchema>;

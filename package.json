@@ -1,5 +1,5 @@
 {
-  "name": "create-hbar",
+  "name": "create-scaffold-hbar",
   "version": "0.1.0",
   "description": "Scaffold a Hedera dApp project",
   "repository": {
@@ -8,11 +8,11 @@
   },
   "main": "dist/cli.js",
   "type": "module",
-  "bin": "bin/create-hbar.js",
+  "bin": "bin/create-scaffold-hbar.js",
   "scripts": {
     "build": "rollup -c rollup.config.js && node scripts/write-bin.js",
     "dev": "rollup -c rollup.config.js --watch",
-    "cli": "node bin/create-hbar.js",
+    "cli": "node bin/create-scaffold-hbar.js",
     "lint": "eslint .",
     "format": "prettier --write .",
     "test": "vitest run",

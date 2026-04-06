@@ -3,7 +3,7 @@ import chalk from "chalk";
 import figlet from "figlet";
 import { BRAND_COLORS } from "./consts";
 
-const COMPACT_TITLE = chalk.hex(BRAND_COLORS.hederaTeal).bold(" create-hbar ");
+const COMPACT_TITLE = chalk.hex(BRAND_COLORS.hederaTeal).bold(" create-scaffold-hbar ");
 
 export function renderIntroMessage() {
   const columns = process.stdout.columns ?? 80;
@@ -13,7 +13,7 @@ export function renderIntroMessage() {
     return;
   }
 
-  const banner = figlet.textSync("create-hbar", { font: "Small" });
+  const banner = figlet.textSync("create-scaffold-hbar", { font: "Small" });
   const coloredBanner = chalk.hex(BRAND_COLORS.hederaTeal)(banner);
   console.log(coloredBanner);
   p.intro(COMPACT_TITLE);

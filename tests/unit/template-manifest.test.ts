@@ -10,7 +10,7 @@ const fixtureManifest = {
   name: "payments-scheduler",
   description: "NFT Collection template",
   version: "1.0.0",
-  "create-hbar": {
+  "create-scaffold-hbar": {
     rename: {
       HtsNftTemplate: {
         to: "{{projectName}}",
@@ -123,13 +123,13 @@ describe("template manifest integration", () => {
 
       const raw = JSON.parse(fs.readFileSync(path.join(projectDir, "template.json"), "utf8"));
       const manifest = TemplateManifestSchema.parse(raw);
-      const createHbar = manifest["create-hbar"];
+      const createScaffoldHbar = manifest["create-scaffold-hbar"];
 
-      if (createHbar?.rename) {
-        applyRenameMap(projectDir, createHbar.rename, "my-hedera-dapp");
+      if (createScaffoldHbar?.rename) {
+        applyRenameMap(projectDir, createScaffoldHbar.rename, "my-hedera-dapp");
       }
-      if (createHbar?.envVars?.length) {
-        generateEnvExample(projectDir, createHbar.envVars);
+      if (createScaffoldHbar?.envVars?.length) {
+        generateEnvExample(projectDir, createScaffoldHbar.envVars);
       }
 
       expect(fs.readFileSync(path.join(projectDir, "contracts", "Token.ts"), "utf8")).toBe(

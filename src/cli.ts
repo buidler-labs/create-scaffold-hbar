@@ -15,7 +15,7 @@ export async function cli(args: Args) {
     const { errors } = await checkSystemRequirements();
 
     if (errors.length > 0) {
-      console.log(chalk.red("\n❌ create-hbar requirements not met:"));
+      console.log(chalk.red("\n❌ create-scaffold-hbar requirements not met:"));
       errors.forEach(error => console.log(chalk.red(`  - ${error}`)));
       process.exit(EXIT_CODES.GENERIC);
     }

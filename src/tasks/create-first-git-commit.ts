@@ -17,7 +17,7 @@ const foundryLibRepoMap: Record<string, string> = {
   "solidity-bytes-utils": "gnsps/solidity-bytes-utils",
   "hedera-forking": "hashgraph/hedera-forking",
 };
-const createHbarVersion = packageJson.version;
+const createScaffoldHbarVersion = packageJson.version;
 
 async function resolveFoundryLibraries(foundryWorkSpacePath: string): Promise<string[]> {
   const remappingsPath = path.join(foundryWorkSpacePath, "remappings.txt");
@@ -42,7 +42,7 @@ async function resolveFoundryLibraries(foundryWorkSpacePath: string): Promise<st
 }
 
 /**
- * Stages all files, creates the initial commit (message: create-hbar branding),
+ * Stages all files, creates the initial commit (message: create-scaffold-hbar branding),
  * and when Foundry is selected runs forge install and amends the commit with lib submodules.
  *
  * We use --no-gpg-sign so that users with commit signing (e.g. SSH key with passphrase)
@@ -53,7 +53,13 @@ export async function createFirstGitCommit(targetDir: string, options: Options) 
     await execa("git", ["add", "-A"], { cwd: targetDir });
     await execa(
       "git",
-      ["commit", "-m", `Initial commit with create-hbar @ ${createHbarVersion}`, "--no-verify", "--no-gpg-sign"],
+      [
+        "commit",
+        "-m",
+        `Initial commit with create-scaffold-hbar @ ${createScaffoldHbarVersion}`,
+        "--no-verify",
+        "--no-gpg-sign",
+      ],
       { cwd: targetDir },
     );
 

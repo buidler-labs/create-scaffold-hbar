@@ -1,6 +1,6 @@
 # Template flow (giget)
 
-The CLI uses **giget** to download the chosen template. There are **no embedded templates** in the create-hbar repo and **no extension system**. Template content lives in the template repo as **branch names** (e.g. `templates/blank-template`, `templates/payments-scheduler`).
+The CLI uses **giget** to download the chosen template. There are **no embedded templates** in the create-scaffold-hbar repo and **no extension system**. Template content lives in the template repo as **branch names** (e.g. `templates/blank-template`, `templates/payments-scheduler`).
 
 ## Flow
 

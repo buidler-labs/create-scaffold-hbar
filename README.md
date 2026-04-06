@@ -1,8 +1,8 @@
-# create-hbar
+# create-scaffold-hbar
 
 **Scaffold Hedera dApp projects from the command line.** Pick a template, frontend, Solidity framework, and wallet—then get a runnable project in one step.
 
-Create-hbar is an interactive CLI (like `create-next-app` or `create-react-app`) for the [Hedera](https://hedera.com) ecosystem. It fetches a **template from a Git branch** (via [giget](https://github.com/unjs/giget)), then generates a monorepo with contracts (Hardhat or Foundry), frontend (Next.js), and Hedera network configuration. There are **no embedded templates** in the CLI repo and **no extension system**—templates are branches in the template repo (e.g. `templates/blank-template`).
+create-scaffold-hbar is an interactive CLI (like `create-next-app` or `create-react-app`) for the [Hedera](https://hedera.com) ecosystem. It fetches a **template from a Git branch** (via [giget](https://github.com/unjs/giget)), then generates a monorepo with contracts (Hardhat or Foundry), frontend (Next.js), and Hedera network configuration. There are **no embedded templates** in the CLI repo and **no extension system**—templates are branches in the template repo (e.g. `templates/blank-template`).
 
 ---
 
@@ -50,26 +50,26 @@ If you choose **Hardhat** or **none**, no extra install is required.
 Create a new Hedera dApp without cloning this repo:
 
 ```bash
-npx create-hbar@latest
+npx create-scaffold-hbar@latest
 ```
 
 You’ll get interactive prompts for project name, template, frontend, framework, wallet, network, and package manager. To accept all defaults and skip prompts:
 
 ```bash
-npx create-hbar@latest --yes
+npx create-scaffold-hbar@latest --yes
 ```
 
 To skip installing dependencies (e.g. to install yourself later):
 
 ```bash
-npx create-hbar@latest --yes --skip-install
+npx create-scaffold-hbar@latest --yes --skip-install
 ```
 
 ---
 
 ## Running locally (development)
 
-Use this when you’re working on the create-hbar CLI itself.
+Use this when you’re working on the create-scaffold-hbar CLI itself.
 
 ### 1. Clone and install
 
@@ -92,7 +92,7 @@ yarn build
 From the repo root:
 
 ```bash
-node bin/create-hbar.js [project-name] [options]
+node bin/create-scaffold-hbar.js [project-name] [options]
 ```
 
 Or use the `cli` script:
@@ -105,26 +105,26 @@ yarn cli
 
 ```bash
 # Interactive: prompts for everything
-node bin/create-hbar.js --skip-install
+node bin/create-scaffold-hbar.js --skip-install
 
 # Non-interactive: default project name, no install, no Foundry check
-node bin/create-hbar.js --yes --skip-install --solidity-framework none
+node bin/create-scaffold-hbar.js --yes --skip-install --solidity-framework none
 
 # Non-interactive with Hardhat
-node bin/create-hbar.js --yes --skip-install --solidity-framework hardhat
+node bin/create-scaffold-hbar.js --yes --skip-install --solidity-framework hardhat
 
 # Custom project name and template
-node bin/create-hbar.js my-hts-app --template payments-scheduler --frontend nextjs-app --skip-install
+node bin/create-scaffold-hbar.js my-hts-app --template payments-scheduler --frontend nextjs-app --skip-install
 
 # See all options
-node bin/create-hbar.js --help
+node bin/create-scaffold-hbar.js --help
 ```
 
 To avoid creating the project inside the repo, run from another directory:
 
 ```bash
 cd /tmp
-node /path/to/create-hbar/bin/create-hbar.js --yes --skip-install my-hedera-dapp
+node /path/to/create-hbar/bin/create-scaffold-hbar.js --yes --skip-install my-hedera-dapp
 ```
 
 ---
@@ -166,14 +166,14 @@ Pre-commit hooks (lefthook) run format, type-check, and lint.
 
 From the repo root after `yarn build`, you can run:
 
-| Scenario        | Command                                                                                                                 | What to check                         |
-| --------------- | ----------------------------------------------------------------------------------------------------------------------- | ------------------------------------- |
-| Help            | `node bin/create-hbar.js --help`                                                                                        | All options listed                    |
-| Default         | `node bin/create-hbar.js e2e-scenarios/default --yes --skip-install`                                                    | Scaffold + skip install               |
-| Solidity none   | `node bin/create-hbar.js e2e-scenarios/sol-none --yes --skip-install -s none`                                           | No "and submodules"                   |
-| Hardhat         | `node bin/create-hbar.js e2e-scenarios/sol-hardhat --yes --skip-install -s hardhat`                                     | `packages/hardhat` + `nextjs`         |
-| Custom flags    | `node bin/create-hbar.js e2e-scenarios/custom --yes --skip-install -t blank -f nextjs-app --network mainnet --use-pnpm` | Title shows "pnpm"                    |
-| Install failure | `node bin/create-hbar.js e2e-scenarios/with-install --yes -s hardhat --use-npm`                                         | Exit code **5**, InstallError message |
+| Scenario        | Command                                                                                                                          | What to check                         |
+| --------------- | -------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------- |
+| Help            | `node bin/create-scaffold-hbar.js --help`                                                                                        | All options listed                    |
+| Default         | `node bin/create-scaffold-hbar.js e2e-scenarios/default --yes --skip-install`                                                    | Scaffold + skip install               |
+| Solidity none   | `node bin/create-scaffold-hbar.js e2e-scenarios/sol-none --yes --skip-install -s none`                                           | No "and submodules"                   |
+| Hardhat         | `node bin/create-scaffold-hbar.js e2e-scenarios/sol-hardhat --yes --skip-install -s hardhat`                                     | `packages/hardhat` + `nextjs`         |
+| Custom flags    | `node bin/create-scaffold-hbar.js e2e-scenarios/custom --yes --skip-install -t blank -f nextjs-app --network mainnet --use-pnpm` | Title shows "pnpm"                    |
+| Install failure | `node bin/create-scaffold-hbar.js e2e-scenarios/with-install --yes -s hardhat --use-npm`                                         | Exit code **5**, InstallError message |
 
 Output goes under `e2e-scenarios/` (gitignored).
 
@@ -183,7 +183,7 @@ Output goes under `e2e-scenarios/` (gitignored).
 
 ```
 create-hbar/
-├── bin/create-hbar.js    # CLI entry (points to dist/)
+├── bin/create-scaffold-hbar.js    # CLI entry (points to dist/)
 ├── src/
 │   ├── cli.ts            # Main CLI flow
 │   ├── main.ts           # createProject task list

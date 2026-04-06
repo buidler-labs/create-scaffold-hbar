@@ -1,18 +1,18 @@
-# Welcome to create-hbar Contributing Guide
+# Welcome to create-scaffold-hbar Contributing Guide
 
-Thank you for investing your time in contributing to create-hbar!
+Thank you for investing your time in contributing to create-scaffold-hbar!
 
 This guide aims to provide an overview of the contribution workflow to help us make the contribution process effective for everyone involved.
 
 ## About the Project
 
-create-hbar is a CLI tool to create a minimal repo to build decentralized applications on Hedera, providing builders with a starter kit based on Scaffold-HBAR.
+create-scaffold-hbar is a CLI tool to create a minimal repo to build decentralized applications on Hedera, providing builders with a starter kit based on Scaffold-HBAR.
 
 Read the [README](README.md) to get an overview of the project.
 
 ### Vision
 
-The goal of create-hbar is to be a "toolkit creator", using Scaffold-HBAR as a base to provide the primary building blocks for a decentralized application. We also support the possibility to import 3rd party packages (that follow our standard).
+The goal of create-scaffold-hbar is to be a "toolkit creator", using Scaffold-HBAR as a base to provide the primary building blocks for a decentralized application. We also support the possibility to import 3rd party packages (that follow our standard).
 
 The repo can be forked to include integrations and more features, but we want to keep the `main` branch simple and minimal.
 
@@ -78,7 +78,7 @@ We follow the ["fork-and-pull" Git workflow](https://github.com/susam/gitpr)
 6. Push changes to your fork
 7. Open a PR in our repository and tag one of the maintainers to review your PR
 
-> ⚠️ **Important.** Please make sure to choose **create-hbar** repo when you create your branch and compare your changes.
+> ⚠️ **Important.** Please make sure to base your branch on this repository (upstream `main`) when you open a pull request.
 
 Here are some tips for a high-quality pull request:
 
