@@ -1,16 +1,14 @@
 import * as p from "@clack/prompts";
-import type { Frontend, Network, Options, PackageManager, RawOptions, SolidityFramework, Wallet } from "../types";
+import type { Frontend, Network, Options, RawOptions, SolidityFramework, Wallet } from "../types";
 import {
   DEFAULT_OPTIONS,
   EXIT_CODES,
   FRONTENDS,
   NETWORKS,
-  PACKAGE_MANAGERS,
   SOLIDITY_FRAMEWORK_OPTIONS,
   WALLETS,
 } from "./consts";
 import { fetchAvailableTemplates } from "./fetch-available-templates";
-import { detectPackageManager } from "./parse-arguments-into-options";
 import { validateNpmName } from "./validate-name";
 import { resolveTemplateCapabilities } from "./template-capabilities";
 import { ValidationError } from "./errors";
@@ -150,18 +148,6 @@ export async function promptForMissingOptions(rawOptions: RawOptions): Promise<O
           })) as Network,
         ));
 
-  const packageManager =
-    rawOptions.packageManager ??
-    (acceptDefaults
-      ? detectPackageManager()
-      : resolvePromptValue(
-          (await p.select({
-            message: "Which package manager?",
-            options: PACKAGE_MANAGERS.map(pm => ({ value: pm.value, label: pm.label })),
-            initialValue: detectPackageManager(),
-          })) as PackageManager,
-        ));
-
   const install =
     rawOptions.install === false
       ? false
@@ -182,7 +168,7 @@ export async function promptForMissingOptions(rawOptions: RawOptions): Promise<O
     frontend,
     wallet,
     network,
-    packageManager,
+    packageManager: "yarn",
     install: Boolean(install),
     solidityFramework,
   };

@@ -80,13 +80,6 @@ export const NETWORKS = [
   { value: "mainnet", label: "Mainnet" },
 ] as const;
 
-/** Package manager options shown when auto-detection is ambiguous. */
-export const PACKAGE_MANAGERS = [
-  { value: "npm", label: "npm" },
-  { value: "pnpm", label: "pnpm" },
-  { value: "yarn", label: "yarn" },
-] as const;
-
 /** Hedera brand palette used for terminal output styling. */
 export const BRAND_COLORS = {
   hederaTeal: "#0031FF",
@@ -106,7 +99,7 @@ export const DEFAULT_OPTIONS = {
   frontend: "nextjs-app",
   wallet: ["rainbowkit"],
   network: "testnet",
-  packageManager: "npm",
+  packageManager: "yarn",
   install: true,
   solidityFramework: "foundry",
 } as const;

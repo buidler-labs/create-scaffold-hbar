@@ -23,7 +23,8 @@ create-scaffold-hbar is an interactive CLI (like `create-next-app` or `create-re
   [nodejs.org](https://nodejs.org/)
 - **Git** (with `user.name` and `user.email` configured)  
   [git-scm.com](https://git-scm.com/)
-- **Yarn**, **npm**, or **pnpm** (one of them; the CLI can detect it)
+- **Yarn** (the scaffolded projects use Yarn workspaces; npm and pnpm are not supported)  
+  Install via Corepack: `corepack enable && corepack prepare yarn@stable --activate`
 
 If you choose **Foundry** as the Solidity framework, you need Foundry installed:
 
@@ -53,7 +54,7 @@ Create a new Hedera dApp without cloning this repo:
 npx create-scaffold-hbar@latest
 ```
 
-You’ll get interactive prompts for project name, template, frontend, framework, wallet, network, and package manager. To accept all defaults and skip prompts:
+You’ll get interactive prompts for project name, template, frontend, framework, wallet, and network. Yarn is used automatically as the package manager. To accept all defaults and skip prompts:
 
 ```bash
 npx create-scaffold-hbar@latest --yes
@@ -140,7 +141,6 @@ node /path/to/create-hbar/bin/create-scaffold-hbar.js --yes --skip-install my-he
 | `-s, --solidity-framework <fw>`             | `foundry` \| `hardhat` \| `none`                          |
 | `-w, --wallet <list>`                       | `rainbowkit`                                              |
 | `--network <network>`                       | `testnet` \| `mainnet`                                    |
-| `--use-npm` \| `--use-pnpm` \| `--use-yarn` | Force package manager                                     |
 | `--skip-install`                            | Don’t run install after scaffolding                       |
 | `-y, --yes`                                 | Use defaults for all prompts (non-interactive)            |
 | `--ci`                                      | CI mode (implies `--yes`, structured output)              |
@@ -172,8 +172,8 @@ From the repo root after `yarn build`, you can run:
 | Default         | `node bin/create-scaffold-hbar.js e2e-scenarios/default --yes --skip-install`                                                    | Scaffold + skip install               |
 | Solidity none   | `node bin/create-scaffold-hbar.js e2e-scenarios/sol-none --yes --skip-install -s none`                                           | No "and submodules"                   |
 | Hardhat         | `node bin/create-scaffold-hbar.js e2e-scenarios/sol-hardhat --yes --skip-install -s hardhat`                                     | `packages/hardhat` + `nextjs`         |
-| Custom flags    | `node bin/create-scaffold-hbar.js e2e-scenarios/custom --yes --skip-install -t blank -f nextjs-app --network mainnet --use-pnpm` | Title shows "pnpm"                    |
-| Install failure | `node bin/create-scaffold-hbar.js e2e-scenarios/with-install --yes -s hardhat --use-npm`                                         | Exit code **5**, InstallError message |
+| Custom flags    | `node bin/create-scaffold-hbar.js e2e-scenarios/custom --yes --skip-install -t blank -f nextjs-app --network mainnet` | Scaffold with defaults                    |
+| Install failure | `node bin/create-scaffold-hbar.js e2e-scenarios/with-install --yes -s hardhat`                                         | Exit code **5**, InstallError message |
 
 Output goes under `e2e-scenarios/` (gitignored).
 

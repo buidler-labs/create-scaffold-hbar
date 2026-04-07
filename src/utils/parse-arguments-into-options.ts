@@ -3,7 +3,6 @@ import type {
   SolidityFramework,
   RawOptions,
   SolidityFrameworkChoices,
-  PackageManager,
   Network,
   Frontend,
   Wallet,
@@ -18,10 +17,8 @@ import {
   SOLIDITY_FRAMEWORK_OPTIONS,
   WALLETS,
   NETWORKS,
-  PACKAGE_MANAGERS,
 } from "./consts";
 import { validateNpmName } from "./validate-name";
-import { detectPackageManager } from "./detect-pm";
 import packageJson from "../../package.json";
 
 // ─── Valid enum values derived from consts (single source of truth) ───────────
@@ -35,7 +32,6 @@ const VALID_SOLIDITY_FRAMEWORKS = SOLIDITY_FRAMEWORK_OPTIONS.map(s => s.value) a
 )[];
 const VALID_WALLETS = WALLETS.map(w => w.value) as readonly Wallet[];
 const VALID_NETWORKS = NETWORKS.map(n => n.value) as readonly Network[];
-const VALID_PACKAGE_MANAGERS = PACKAGE_MANAGERS.map(pm => pm.value) as readonly PackageManager[];
 const VALID_LOG_LEVELS = ["error", "warn", "info", "verbose", "debug"] as const;
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -62,7 +58,6 @@ function validateEnum<T extends string>(value: string, allowed: readonly T[], fl
   return lower;
 }
 
-export { detectPackageManager } from "./detect-pm";
 
 /**
  * Parses CLI arguments using commander and returns raw (pre-prompt) options.
@@ -84,9 +79,6 @@ export function parseArgumentsIntoOptions(rawArgs: Args): {
     .option("-s, --solidity-framework <fw>", "Solidity framework (foundry|hardhat|none)")
     .option("-w, --wallet <wallets>", "Wallet connector(s), comma-separated (walletconnect,metamask)")
     .option("--network <network>", "Target network (testnet|mainnet)")
-    .option("--use-npm", "Use npm as package manager")
-    .option("-p, --use-pnpm", "Use pnpm as package manager")
-    .option("--use-yarn", "Use yarn as package manager")
     .option("--skip-install", "Skip dependency installation")
     .option("-y, --yes", "Accept all defaults and skip all prompts")
     .option("--ci", "CI mode: non-interactive, structured log output, no TTY color")
@@ -152,16 +144,6 @@ export function parseArgumentsIntoOptions(rawArgs: Args): {
     ? (opts.wallet as string).split(",").map((w: string) => validateEnum(w.trim(), VALID_WALLETS, "wallet"))
     : null;
 
-  // ── Resolve package manager (explicit flags take priority over detection) ──
-  let packageManager: PackageManager | null = null;
-  const pmFlagCount = [opts.useNpm, opts.usePnpm, opts.useYarn].filter(Boolean).length;
-  if (pmFlagCount > 1) {
-    exitWithBadArgs("Only one package manager flag may be specified at a time (--use-npm, --use-pnpm, --use-yarn)");
-  }
-  if (opts.useNpm) packageManager = validateEnum("npm", VALID_PACKAGE_MANAGERS, "use-npm");
-  else if (opts.usePnpm) packageManager = validateEnum("pnpm", VALID_PACKAGE_MANAGERS, "use-pnpm");
-  else if (opts.useYarn) packageManager = validateEnum("yarn", VALID_PACKAGE_MANAGERS, "use-yarn");
-
   // ── --ci implies --yes ────────────────────────────────────────────────────
   const acceptDefaults = Boolean(opts.yes) || Boolean(opts.ci);
 
@@ -183,7 +165,7 @@ export function parseArgumentsIntoOptions(rawArgs: Args): {
     frontend,
     wallet: acceptDefaults ? (wallet ?? [...DEFAULT_OPTIONS.wallet]) : wallet,
     network: acceptDefaults ? (network ?? DEFAULT_OPTIONS.network) : network,
-    packageManager: packageManager ?? (acceptDefaults ? detectPackageManager() : null),
+    packageManager: "yarn",
   };
 
   if (opts.ci) process.env.HBAR_CI = "1";

@@ -67,6 +67,18 @@ describe("TemplateManifestSchema", () => {
       expect(result.data["create-scaffold-hbar"]?.envVars).toHaveLength(1);
     });
 
+    it("accepts outro.steps for a custom CLI outro body", () => {
+      const result = TemplateManifestSchema.safeParse({
+        name: "hedera-demo",
+        "create-scaffold-hbar": {
+          outro: { steps: ["+Start the frontend: {run:start}"] },
+        },
+      });
+      expect(result.success).toBe(true);
+      if (!result.success) return;
+      expect(result.data["create-scaffold-hbar"]?.outro?.steps).toEqual(["+Start the frontend: {run:start}"]);
+    });
+
     it("preserves rename entry structure on parse", () => {
       const result = TemplateManifestSchema.safeParse(fullManifest);
       expect(result.success).toBe(true);

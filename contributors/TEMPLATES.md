@@ -8,6 +8,15 @@ The CLI uses **giget** to download the chosen template. There are **no embedded 
 - **List from GitHub API**: In interactive mode, the "Which starter template?" prompt is filled by calling the GitHub API (matching-refs for `templates/*`). If the request fails (e.g. offline), a **fallback list** from `TEMPLATES_FALLBACK` in `src/utils/consts.ts` is used.
 - **Fetch**: `getTemplateSpec()` and `downloadTemplate(gh:spec)` in `src/tasks/copy-template-files.ts` download the template into a temp dir, then copy into the user's project directory.
 
+## `template.json` — custom outro
+
+Optional `create-scaffold-hbar.outro.steps` is a non-empty array of lines inserted **after** the shared header (`Congratulations`, `cd`, optional install hint) and **before** the closing thanks line. It **replaces** the default contract/frontend-specific middle section when present.
+
+- **`+` prefix**: render the rest of the line in bold.
+- **`{run:script}`**: expanded to the correct package-manager command (e.g. `{run:start}` → `yarn start`, `npm run start`, `pnpm start`).
+
+Omit `outro` to keep the standard Scaffold-HBAR next-steps text.
+
 ## See also
 
 - `src/utils/fetch-available-templates.ts` — `getTemplateSpec()`, `fetchAvailableTemplates()`

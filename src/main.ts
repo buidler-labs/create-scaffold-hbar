@@ -16,6 +16,7 @@ export async function createProject(options: Options) {
   console.log(`\n`);
 
   const targetDirectory = path.resolve(process.cwd(), options.project);
+  let outroSteps: string[] | undefined;
 
   const tasks = new Listr(
     [
@@ -25,7 +26,10 @@ export async function createProject(options: Options) {
       },
       {
         title: `🚀 Creating a new Scaffold-HBAR app in ${chalk.green.bold(options.project)}`,
-        task: () => copyTemplateFiles(options, targetDirectory),
+        task: async () => {
+          const { outroSteps: steps } = await copyTemplateFiles(options, targetDirectory);
+          outroSteps = steps;
+        },
       },
       {
         title: `📦 Installing dependencies with ${options.packageManager}, this could take a while`,
@@ -60,5 +64,5 @@ export async function createProject(options: Options) {
   );
 
   await tasks.run();
-  renderOutroMessage(options);
+  renderOutroMessage(outroSteps?.length ? { ...options, outroSteps } : options);
 }

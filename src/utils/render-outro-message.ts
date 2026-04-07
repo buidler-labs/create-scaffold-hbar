@@ -2,10 +2,21 @@ import type { Options } from "../types";
 import chalk from "chalk";
 import { SOLIDITY_FRAMEWORKS } from "./consts";
 
+/** Expands `{run:script}` placeholders (e.g. `{run:start}` → `yarn start`). */
+export function expandOutroPlaceholders(line: string, run: (script: string) => string): string {
+  return line.replace(/\{run:([a-zA-Z0-9:_-]+)\}/g, (_, script: string) => run(script));
+}
+
+function formatOutroLine(line: string): string {
+  if (line.startsWith("+")) {
+    return chalk.bold(line.slice(1));
+  }
+  return line;
+}
+
 export function renderOutroMessage(options: Options) {
-  const pm = options.packageManager;
-  const run = (script: string) => (pm === "npm" ? `npm run ${script}` : `${pm} ${script}`);
-  const installAndFormat = `${pm} install && ${run("format")}`;
+  const run = (script: string) => `yarn ${script}`;
+  const installAndFormat = `yarn install && yarn format`;
 
   let message = `
   \n
@@ -23,7 +34,14 @@ export function renderOutroMessage(options: Options) {
     `;
   }
 
-  if (
+  const customSteps = options.outroSteps;
+  if (customSteps?.length) {
+    for (const raw of customSteps) {
+      const expanded = expandOutroPlaceholders(raw, run);
+      message += `\n    \t${formatOutroLine(expanded)}`;
+    }
+    message += "\n    ";
+  } else if (
     options.solidityFramework === SOLIDITY_FRAMEWORKS.HARDHAT ||
     options.solidityFramework === SOLIDITY_FRAMEWORKS.FOUNDRY
   ) {

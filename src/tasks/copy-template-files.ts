@@ -17,14 +17,18 @@ const NEXTJS_PACKAGE = "nextjs";
 /**
  * If template.json exists in project root, parse it, run rename and env
  * generation, then remove the manifest file.
+ *
+ * @returns Custom outro steps from `outro.steps` when present; otherwise undefined.
  */
-function processTemplateManifest(projectDir: string, projectName: string): void {
+function processTemplateManifest(projectDir: string, projectName: string): string[] | undefined {
   const manifestPath = path.join(projectDir, TEMPLATE_MANIFEST_FILENAME);
-  if (!fs.existsSync(manifestPath)) return;
+  if (!fs.existsSync(manifestPath)) return undefined;
 
   const raw = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
   const manifest = TemplateManifestSchema.parse(raw);
   const createScaffoldHbar = manifest["create-scaffold-hbar"];
+
+  const outroSteps = createScaffoldHbar?.outro?.steps;
 
   if (createScaffoldHbar?.rename) {
     applyRenameMap(projectDir, createScaffoldHbar.rename, projectName);
@@ -34,6 +38,7 @@ function processTemplateManifest(projectDir: string, projectName: string): void 
   }
 
   fs.unlinkSync(manifestPath);
+  return outroSteps?.length ? [...outroSteps] : undefined;
 }
 
 /**
@@ -179,7 +184,7 @@ function filterRootPackageJson(
  * dir, copies contents into targetDir, removes the unselected solidity framework
  * package(s), updates root package.json, runs manifest post-processing, and inits git.
  */
-export async function copyTemplateFiles(options: Options, targetDir: string): Promise<void> {
+export async function copyTemplateFiles(options: Options, targetDir: string): Promise<{ outroSteps?: string[] }> {
   const spec = getTemplateSpec(options.template as string);
   const tmpDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), "create-scaffold-hbar-"));
 
@@ -199,10 +204,12 @@ export async function copyTemplateFiles(options: Options, targetDir: string): Pr
     }
     filterRootPackageJson(targetDir, options.solidityFramework, options.frontend);
 
-    processTemplateManifest(targetDir, options.project);
+    const outroSteps = processTemplateManifest(targetDir, options.project);
 
     await execa("git", ["init"], { cwd: targetDir });
     await execa("git", ["checkout", "-b", "main"], { cwd: targetDir });
+
+    return outroSteps?.length ? { outroSteps } : {};
   } finally {
     await fs.promises.rm(tmpDir, { recursive: true, force: true });
   }
