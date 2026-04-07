@@ -24,14 +24,6 @@ vi.mock("@clack/prompts", () => ({
   log: { info: vi.fn(), success: vi.fn(), warn: vi.fn(), error: vi.fn(), message: vi.fn(), step: vi.fn() },
 }));
 
-// ─── Mock detect package manager (avoid filesystem probe during tests) ───────
-vi.mock("../../src/utils/parse-arguments-into-options", async importOriginal => {
-  const actual: Record<string, unknown> = await importOriginal();
-  return {
-    ...actual,
-    detectPackageManager: vi.fn().mockReturnValue("npm"),
-  };
-});
 
 vi.mock("../../src/utils/template-capabilities", () => ({
   resolveTemplateCapabilities: vi.fn().mockResolvedValue({
@@ -54,7 +46,7 @@ function makeRawOptions(overrides: Partial<RawOptions> = {}): RawOptions {
     solidityFramework: null,
     wallet: null,
     network: null,
-    packageManager: null,
+    packageManager: "yarn",
     install: true,
     help: false,
     ...overrides,
@@ -111,9 +103,9 @@ describe("promptForMissingOptions", () => {
     expect(result.network).toBe("mainnet");
   });
 
-  it("skips packageManager prompt when pre-supplied", async () => {
-    const result = await promptForMissingOptions(makeRawOptions({ packageManager: "pnpm" }));
-    expect(result.packageManager).toBe("pnpm");
+  it("always uses yarn as package manager", async () => {
+    const result = await promptForMissingOptions(makeRawOptions());
+    expect(result.packageManager).toBe("yarn");
   });
 
   it("skips install prompt when install is false (--skip-install)", async () => {

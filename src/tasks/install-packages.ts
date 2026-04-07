@@ -5,8 +5,6 @@ import type { PackageManager } from "../types";
 import { InstallError } from "../utils/errors";
 
 const INSTALL_ARGS: Record<PackageManager, string[]> = {
-  npm: ["install"],
-  pnpm: ["install"],
   yarn: ["install"],
 };
 
