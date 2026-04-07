@@ -81,7 +81,7 @@ export async function createFirstGitCommit(targetDir: string, options: Options) 
       // forge install foundry libraries as git submodules
       await execa("forge", ["install", ...foundryLibraries], { cwd: foundryWorkSpacePath });
       await execa("git", ["add", "-A"], { cwd: targetDir });
-      await execa("git", ["commit", "--amend", "--no-edit", "--no-gpg-sign"], { cwd: targetDir });
+      await execa("git", ["commit", "--amend", "--no-edit", "--no-verify", "--no-gpg-sign"], { cwd: targetDir });
     }
   } catch (e: any) {
     // cast error as ExecaError to get stderr
