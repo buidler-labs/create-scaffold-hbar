@@ -17,10 +17,13 @@ function formatOutroLine(line: string): string {
   return line;
 }
 
-/** Generates the run command based on package manager. */
-function getRunCommand(packageManager: Options["packageManager"], script: string): string {
+/** Generates the run command based on package manager.
+ * @param hasArgs - Whether additional arguments will be passed. If true for npm, adds `--` separator.
+ */
+function getRunCommand(packageManager: Options["packageManager"], script: string, hasArgs: boolean = false): string {
   if (packageManager === "npm") {
-    return `npm run ${script}`;
+    // npm requires `--` separator to forward arguments through script chains
+    return hasArgs ? `npm run ${script} --` : `npm run ${script}`;
   }
   return `yarn ${script}`;
 }
@@ -101,10 +104,12 @@ export function renderOutroMessage(options: Options) {
     options.solidityFramework === SOLIDITY_FRAMEWORKS.HARDHAT ||
     options.solidityFramework === SOLIDITY_FRAMEWORKS.FOUNDRY
   ) {
+    // For npm, use hasArgs=true when the command will be followed by arguments (needs `--` separator)
+    const deployCmd = getRunCommand(options.packageManager, "deploy", true);
     message += `
   ${chalk.bold("Run locally:")}
     1. Start the local chain: ${chalk.cyan(run("chain"))}
-    2. In another terminal, deploy to the local node: ${chalk.cyan(`${run("deploy")} --network localhost`)}
+    2. In another terminal, deploy to the local node: ${chalk.cyan(`${deployCmd} --network localhost`)}
     3. Run contract tests (with the chain running): ${chalk.cyan(run("test"))}
 `;
     if (options.frontend !== "none") {
@@ -113,8 +118,8 @@ export function renderOutroMessage(options: Options) {
 
     const deployTestnet =
       options.solidityFramework === SOLIDITY_FRAMEWORKS.HARDHAT
-        ? `${run("deploy")} --network hederaTestnet`
-        : `${run("deploy")} --network hedera_testnet`;
+        ? `${deployCmd} --network hederaTestnet`
+        : `${deployCmd} --network hedera_testnet`;
     message += `
   ${chalk.bold("Deploy to Hedera testnet:")}
     Set your deployer key (e.g. ${chalk.cyan(run("generate"))}), then: ${chalk.cyan(deployTestnet)}

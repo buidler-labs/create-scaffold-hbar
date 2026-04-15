@@ -61,7 +61,7 @@ describe("renderOutroMessage", () => {
     renderOutroMessage(baseOptions({ packageManager: "npm" }));
     const text = log.mock.calls.map(c => c.join("")).join("\n");
     expect(text).toContain("npm run chain");
-    expect(text).toContain("npm run deploy");
+    expect(text).toContain("npm run deploy -- --network"); // Should have -- separator for args
     expect(text).not.toContain("yarn chain");
   });
 

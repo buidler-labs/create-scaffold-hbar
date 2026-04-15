@@ -16,6 +16,8 @@ const NEXTJS_PACKAGE = "nextjs";
 
 /**
  * Creates a .npmrc file in the target directory for npm to prevent hoisting of packages.
+ * Uses install-strategy=nested to keep dependencies in local node_modules (like npm v6).
+ * This ensures Foundry remappings work correctly.
  * @param targetDir - The target directory to create the .npmrc file in.
  * @param packageManager - The package manager to create the .npmrc file for.
  */
@@ -23,7 +25,9 @@ function createNpmrcForNpm(targetDir: string, packageManager: PackageManager): v
   if (packageManager !== "npm") return;
 
   const npmrcPath = path.join(targetDir, ".npmrc");
-  const content = "workspaces-hoist=false\n";
+  // install-strategy=nested creates local node_modules in each package (npm 9.4+)
+  // This is more reliable than workspaces-hoist=false for Foundry compatibility
+  const content = "install-strategy=nested\n";
   fs.writeFileSync(npmrcPath, content, "utf8");
 }
 
@@ -32,6 +36,7 @@ function createNpmrcForNpm(targetDir: string, packageManager: PackageManager): v
  * Handles:
  * - `yarn workspace @sh/<pkg> <script>` → `npm run <script> -w @sh/<pkg>`
  * - `yarn <script>` → `npm run <script>` (for npm package manager)
+ * - Adds `--` to npm scripts that chain to other scripts, so arguments are forwarded
  */
 function transformScriptForPackageManager(script: string, packageManager: PackageManager): string {
   if (packageManager === "yarn") {
@@ -40,13 +45,33 @@ function transformScriptForPackageManager(script: string, packageManager: Packag
 
   let transformed = script;
 
-  // Transform `yarn workspace @sh/<pkg> <script>` → `npm run <script> -w @sh/<pkg>`
-  transformed = transformed.replace(/yarn\s+workspace\s+(@sh\/\w+)\s+(\S+)/g, "npm run $2 -w $1");
+  // Transform `yarn workspace @sh/<pkg> <script>` → `npm run <script> -w @sh/<pkg> --`
+  // The trailing `--` ensures arguments are forwarded through npm script chains
+  transformed = transformed.replace(/yarn\s+workspace\s+(@sh\/\w+)\s+(\S+)/g, "npm run $2 -w $1 --");
 
   // Transform standalone `yarn <script>` (where <script> doesn't contain spaces or special chars)
   // This matches patterns like `yarn format`, `yarn compile`, but not `yarn workspace ...`
   // We need to be careful not to double-transform already transformed scripts
-  transformed = transformed.replace(/\byarn\s+([a-zA-Z0-9:_-]+)\b(?!\s*-w)/g, "npm run $1");
+  // Also add `--` to wrapper scripts so arguments forward properly
+  transformed = transformed.replace(/\byarn\s+([a-zA-Z0-9:_-]+)\b(?!\s*-w)/g, (match: string, scriptName: string) => {
+    // Check if this looks like a wrapper script (chaining to other scripts)
+    // These typically have names like "deploy", "verify", "foundry:*" that call other scripts
+    const isWrapperScript =
+      scriptName === "deploy" ||
+      scriptName === "verify" ||
+      scriptName === "chain" ||
+      scriptName === "compile" ||
+      scriptName === "fork" ||
+      scriptName === "test" ||
+      scriptName.startsWith("foundry:") ||
+      scriptName.startsWith("hardhat:") ||
+      scriptName.startsWith("next:");
+
+    if (isWrapperScript) {
+      return `npm run ${scriptName} --`;
+    }
+    return `npm run ${scriptName}`;
+  });
 
   return transformed;
 }
