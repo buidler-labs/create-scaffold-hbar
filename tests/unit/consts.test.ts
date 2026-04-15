@@ -108,6 +108,21 @@ describe("NETWORKS", () => {
   });
 });
 
+<<<<<<< HEAD
+=======
+describe("PACKAGE_MANAGERS", () => {
+  it("includes yarn and npm", () => {
+    const values = PACKAGE_MANAGERS.map(pm => pm.value);
+    expect(values).toContain("npm");
+    expect(values).toContain("yarn");
+  });
+
+  it("defaults to yarn as first option", () => {
+    expect(PACKAGE_MANAGERS[0].value).toBe("yarn");
+  });
+});
+
+>>>>>>> 377484a (feat: implement npm support as pm for templates)
 describe("DEFAULT_OPTIONS", () => {
   it("defaults to testnet network", () => {
     expect(DEFAULT_OPTIONS.network).toBe("testnet");
@@ -123,5 +138,9 @@ describe("DEFAULT_OPTIONS", () => {
 
   it("default project name is my-hedera-dapp", () => {
     expect(DEFAULT_OPTIONS.project).toBe("my-hedera-dapp");
+  });
+
+  it("defaults packageManager to yarn", () => {
+    expect(DEFAULT_OPTIONS.packageManager).toBe("yarn");
   });
 });

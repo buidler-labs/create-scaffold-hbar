@@ -9,5 +9,5 @@
     "moduleResolution": "node",
     "resolveJsonModule": true
   },
-  "exclude": ["node_modules", "templates", "externalExtensions", "my-hedera-dapp", "**/*.test.ts"]
+  "exclude": ["node_modules", "templates", "externalExtensions", "my-hedera-dapp", "test-*", "**/*.test.ts"]
 }

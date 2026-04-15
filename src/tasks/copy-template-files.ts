@@ -1,6 +1,6 @@
 import { execa } from "execa";
 import { downloadTemplate } from "giget";
-import { Options, TemplateManifestSchema } from "../types";
+import { Options, TemplateManifestSchema, PackageManager } from "../types";
 import type { SolidityFramework } from "../types";
 import fs from "fs";
 import os from "os";
@@ -13,6 +13,43 @@ import { generateEnvExample } from "./generate-env-example";
 
 const TEMPLATE_MANIFEST_FILENAME = "template.json";
 const NEXTJS_PACKAGE = "nextjs";
+
+/**
+ * Creates a .npmrc file in the target directory for npm to prevent hoisting of packages.
+ * @param targetDir - The target directory to create the .npmrc file in.
+ * @param packageManager - The package manager to create the .npmrc file for.
+ */
+function createNpmrcForNpm(targetDir: string, packageManager: PackageManager): void {
+  if (packageManager !== "npm") return;
+
+  const npmrcPath = path.join(targetDir, ".npmrc");
+  const content = "workspaces-hoist=false\n";
+  fs.writeFileSync(npmrcPath, content, "utf8");
+}
+
+/**
+ * Transforms yarn-specific script commands to npm equivalents.
+ * Handles:
+ * - `yarn workspace @sh/<pkg> <script>` → `npm run <script> -w @sh/<pkg>`
+ * - `yarn <script>` → `npm run <script>` (for npm package manager)
+ */
+function transformScriptForPackageManager(script: string, packageManager: PackageManager): string {
+  if (packageManager === "yarn") {
+    return script;
+  }
+
+  let transformed = script;
+
+  // Transform `yarn workspace @sh/<pkg> <script>` → `npm run <script> -w @sh/<pkg>`
+  transformed = transformed.replace(/yarn\s+workspace\s+(@sh\/\w+)\s+(\S+)/g, "npm run $2 -w $1");
+
+  // Transform standalone `yarn <script>` (where <script> doesn't contain spaces or special chars)
+  // This matches patterns like `yarn format`, `yarn compile`, but not `yarn workspace ...`
+  // We need to be careful not to double-transform already transformed scripts
+  transformed = transformed.replace(/\byarn\s+([a-zA-Z0-9:_-]+)\b(?!\s*-w)/g, "npm run $1");
+
+  return transformed;
+}
 
 /**
  * If template.json exists in project root, parse it, run rename and env
@@ -74,6 +111,41 @@ function removeNextjsPackage(targetDir: string): void {
   }
 }
 
+/** Yarn-specific files/directories to remove when using npm */
+const YARN_SPECIFIC_PATHS = [
+  ".yarnrc.yml",
+  ".yarn",
+  "yarn.lock",
+  ".husky", // Husky hooks often contain yarn-specific commands
+];
+
+/**
+ * Removes Yarn-specific configuration files when using npm.
+ * This prevents conflicts between Yarn 3 configuration and npm.
+ */
+function removeYarnSpecificFiles(targetDir: string, packageManager: PackageManager): void {
+  if (packageManager !== "npm") {
+    return;
+  }
+
+  for (const relativePath of YARN_SPECIFIC_PATHS) {
+    const fullPath = path.join(targetDir, relativePath);
+    if (fs.existsSync(fullPath)) {
+      try {
+        const stat = fs.statSync(fullPath);
+        if (stat.isDirectory()) {
+          fs.rmSync(fullPath, { recursive: true, force: true });
+        } else {
+          fs.unlinkSync(fullPath);
+        }
+      } catch (err) {
+        // Log but don't fail - these files are optional cleanup
+        console.warn(`Warning: Could not remove ${relativePath}:`, err);
+      }
+    }
+  }
+}
+
 /** Script keys that reference the Next.js package; removed when frontend is "none". */
 const NEXTJS_SCRIPT_KEYS = [
   "start",
@@ -91,11 +163,13 @@ const NEXTJS_SCRIPT_KEYS = [
 /**
  * Updates root package.json so workspaces and scripts only reference the
  * selected solidity framework and, when frontend is not "none", the nextjs package.
+ * Also transforms scripts for the selected package manager.
  */
 function filterRootPackageJson(
   targetDir: string,
   selectedFramework: SolidityFramework | null | undefined,
   frontend: Options["frontend"],
+  packageManager: PackageManager,
 ): void {
   const pkgPath = path.join(targetDir, "package.json");
   if (!fs.existsSync(pkgPath)) return;
@@ -170,11 +244,23 @@ function filterRootPackageJson(
           .trim();
       }
 
+      // Transform yarn commands to npm equivalents if needed
+      if (packageManager === "npm") {
+        scripts[key] = transformScriptForPackageManager(scripts[key], packageManager);
+      }
+
       if (scripts[key] === "") {
         delete scripts[key];
       }
     }
   }
+
+  // Update packageManager field to match selected package manager
+  if (packageManager === "npm") {
+    // Get npm version for the packageManager field
+    pkg.packageManager = "npm@10.0.0"; // Will be updated with actual version during install
+  }
+  // For yarn, keep the template's packageManager field as-is
 
   fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2), "utf8");
 }
@@ -202,7 +288,12 @@ export async function copyTemplateFiles(options: Options, targetDir: string): Pr
     if (options.frontend === "none") {
       removeNextjsPackage(targetDir);
     }
-    filterRootPackageJson(targetDir, options.solidityFramework, options.frontend);
+    filterRootPackageJson(targetDir, options.solidityFramework, options.frontend, options.packageManager);
+
+    // Remove Yarn-specific files when using npm to prevent conflicts
+    removeYarnSpecificFiles(targetDir, options.packageManager);
+
+    createNpmrcForNpm(targetDir, options.packageManager);
 
     const outroSteps = processTemplateManifest(targetDir, options.project);
 

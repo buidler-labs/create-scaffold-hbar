@@ -6,6 +6,8 @@ import { InstallError } from "../utils/errors";
 
 const INSTALL_ARGS: Record<PackageManager, string[]> = {
   yarn: ["install"],
+  // Use --legacy-peer-deps to handle peer dependency conflicts common in Hedera ecosystem packages
+  npm: ["install", "--legacy-peer-deps"],
 };
 
 export { InstallError };
@@ -60,7 +62,8 @@ export async function installPackages(
         .map(chunk => chunk.trimEnd() + "\n")
         .join("") ?? outputBuffer;
     task.output = visibleOutput;
-    if (visibleOutput.includes("Link step")) {
+    // Yarn-specific: show message during link step
+    if (packageManager === "yarn" && visibleOutput.includes("Link step")) {
       task.output = chalk.yellow("starting link step, this might take a little time...");
     }
   };

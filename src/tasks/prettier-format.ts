@@ -1,10 +1,14 @@
 import { execa } from "execa";
 import chalk from "chalk";
+import type { PackageManager } from "../types";
 
 // TODO: Instead of using execa, use prettier package from cli to format targetDir
-export async function prettierFormat(targetDir: string): Promise<void> {
+export async function prettierFormat(targetDir: string, packageManager: PackageManager): Promise<void> {
+  const command = packageManager === "npm" ? "npm" : "yarn";
+  const args = packageManager === "npm" ? ["run", "format"] : ["format"];
+
   try {
-    const result = await execa("yarn", ["format"], { cwd: targetDir });
+    const result = await execa(command, args, { cwd: targetDir });
     if (result.failed) {
       throw new Error("Format command exited with non-zero status");
     }

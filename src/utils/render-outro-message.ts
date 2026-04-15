@@ -2,7 +2,7 @@ import type { Options } from "../types";
 import chalk from "chalk";
 import { SOLIDITY_FRAMEWORKS } from "./consts";
 
-/** Expands `{run:script}` placeholders (e.g. `{run:start}` → `yarn start`). */
+/** Expands `{run:script}` placeholders (e.g. `{run:start}` → `yarn start` or `npm run start`). */
 export function expandOutroPlaceholders(line: string, run: (script: string) => string): string {
   return line.replace(/\{run:([a-zA-Z0-9:_-]+)\}/g, (_, script: string) => run(script));
 }
@@ -14,9 +14,26 @@ function formatOutroLine(line: string): string {
   return line;
 }
 
+/** Generates the run command based on package manager. */
+function getRunCommand(packageManager: Options["packageManager"], script: string): string {
+  if (packageManager === "npm") {
+    return `npm run ${script}`;
+  }
+  return `yarn ${script}`;
+}
+
+/** Generates the install and format command based on package manager. */
+function getInstallAndFormatCommand(packageManager: Options["packageManager"]): string {
+  if (packageManager === "npm") {
+    // Use --legacy-peer-deps to handle peer dependency conflicts in Hedera packages
+    return `npm install --legacy-peer-deps && npm run format`;
+  }
+  return `yarn install && yarn format`;
+}
+
 export function renderOutroMessage(options: Options) {
-  const run = (script: string) => `yarn ${script}`;
-  const installAndFormat = `yarn install && yarn format`;
+  const run = (script: string) => getRunCommand(options.packageManager, script);
+  const installAndFormat = getInstallAndFormatCommand(options.packageManager);
 
   let message = `
   \n

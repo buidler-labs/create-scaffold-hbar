@@ -47,10 +47,10 @@ export async function createProject(options: Options) {
       },
       {
         title: "🪄 Formatting files",
-        task: () => prettierFormat(targetDirectory),
+        task: () => prettierFormat(targetDirectory, options.packageManager),
         skip: () => {
           if (!options.install) {
-            return "Can't use source prettier, since `yarn install` was skipped";
+            return "Can't use source prettier, since dependency installation was skipped";
           }
           return false;
         },

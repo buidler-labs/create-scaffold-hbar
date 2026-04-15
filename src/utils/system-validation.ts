@@ -1,8 +1,10 @@
 import chalk from "chalk";
 import { execa } from "execa";
 import semver from "semver";
+import type { PackageManager } from "../types";
 
 const REQUIRED_FOUNDRY_VERSION = "1.4.0";
+const REQUIRED_NPM_VERSION = "8.0.0"; // npm workspaces support
 
 // Custom error for Foundry validation
 class FoundryValidationError extends Error {
@@ -52,7 +54,7 @@ export const validateFoundry = async () => {
   }
 };
 
-export const checkSystemRequirements = async () => {
+export const checkSystemRequirements = async (packageManager: PackageManager = "yarn") => {
   const errors: string[] = [];
 
   try {
@@ -65,13 +67,29 @@ export const checkSystemRequirements = async () => {
     errors.push("Node.js is not installed. Please install Node.js >= 20.18.3");
   }
 
-  try {
-    const { stdout: yarnVersion } = await execa("yarn", ["--version"]);
-    if (semver.lt(yarnVersion, "1.0.0")) {
-      errors.push(`Yarn version should be >= 1.0.0. Recommended version is >= 2.0.0. Current version: ${yarnVersion}`);
+  // Validate package manager based on selection
+  if (packageManager === "yarn") {
+    try {
+      const { stdout: yarnVersion } = await execa("yarn", ["--version"]);
+      if (semver.lt(yarnVersion, "1.0.0")) {
+        errors.push(
+          `Yarn version should be >= 1.0.0. Recommended version is >= 2.0.0. Current version: ${yarnVersion}`,
+        );
+      }
+    } catch {
+      errors.push("Yarn is not installed. Please install Yarn >= 1.0.0. Recommended version is >= 2.0.0");
     }
-  } catch {
-    errors.push("Yarn is not installed. Please install Yarn >= 1.0.0. Recommended version is >= 2.0.0");
+  } else if (packageManager === "npm") {
+    try {
+      const { stdout: npmVersion } = await execa("npm", ["--version"]);
+      if (semver.lt(npmVersion, REQUIRED_NPM_VERSION)) {
+        errors.push(
+          `npm version must be >= ${REQUIRED_NPM_VERSION} for workspaces support. Current version: ${npmVersion}`,
+        );
+      }
+    } catch {
+      errors.push(`npm is not installed. Please install npm >= ${REQUIRED_NPM_VERSION}`);
+    }
   }
 
   try {

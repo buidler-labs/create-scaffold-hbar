@@ -165,6 +165,32 @@ describe("parseArgumentsIntoOptions", () => {
     });
   });
 
+<<<<<<< HEAD
+=======
+  describe("--package-manager", () => {
+    it("accepts npm", () => {
+      const { rawOptions } = parseArgumentsIntoOptions(args("--package-manager", "npm"));
+      expect(rawOptions.packageManager).toBe("npm");
+    });
+
+    it("accepts yarn", () => {
+      const { rawOptions } = parseArgumentsIntoOptions(args("--package-manager", "yarn"));
+      expect(rawOptions.packageManager).toBe("yarn");
+    });
+
+    it("defaults to null when flag is absent", () => {
+      const { rawOptions } = parseArgumentsIntoOptions(args());
+      expect(rawOptions.packageManager).toBeNull();
+    });
+
+    it("exits BAD_ARGS on invalid package manager value", () => {
+      expect(() => parseArgumentsIntoOptions(args("--package-manager", "pnpm"))).toThrow(
+        `process.exit(${EXIT_CODES.BAD_ARGS})`,
+      );
+    });
+  });
+
+>>>>>>> 377484a (feat: implement npm support as pm for templates)
   describe("--skip-install", () => {
     it("sets install to false", () => {
       const { rawOptions } = parseArgumentsIntoOptions(args("--skip-install"));

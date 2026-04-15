@@ -55,4 +55,21 @@ describe("renderOutroMessage", () => {
     expect(text).toContain("Congratulations!");
     expect(text).toContain("Thanks for using Scaffold-HBAR");
   });
+
+  it("uses npm commands when npm package manager is selected", () => {
+    const log = vi.spyOn(console, "log").mockImplementation(() => {});
+    renderOutroMessage(baseOptions({ packageManager: "npm" }));
+    const text = log.mock.calls.map(c => c.join("")).join("\n");
+    expect(text).toContain("npm run chain");
+    expect(text).toContain("npm run deploy");
+    expect(text).not.toContain("yarn chain");
+  });
+
+  it("shows npm install instructions when install is skipped", () => {
+    const log = vi.spyOn(console, "log").mockImplementation(() => {});
+    renderOutroMessage(baseOptions({ install: false, packageManager: "npm" }));
+    const text = log.mock.calls.map(c => c.join("")).join("\n");
+    expect(text).toContain("npm install --legacy-peer-deps && npm run format");
+    expect(text).not.toContain("yarn install");
+  });
 });

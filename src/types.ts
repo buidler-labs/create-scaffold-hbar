@@ -2,8 +2,8 @@ import { z } from "zod";
 
 export type Args = string[];
 
-/** Package manager for the generated project. Yarn is the only supported PM. */
-export type PackageManager = "yarn";
+/** Package manager for the generated project. Supports yarn and npm. */
+export type PackageManager = "yarn" | "npm";
 
 /** Hedera network targets. */
 export type Network = "testnet" | "mainnet";
@@ -131,8 +131,8 @@ type BaseOptions = {
   frontend: Frontend | null;
   /** Target Hedera network. */
   network: Network | null;
-  /** Package manager — always yarn. */
-  packageManager: PackageManager;
+  /** Package manager — yarn or npm. */
+  packageManager: PackageManager | null;
 };
 
 /** Raw options after flag parsing, before interactive prompts fill in nulls. */
@@ -147,7 +147,11 @@ export type RawOptions = BaseOptions & {
  * (which can legitimately be null for "none").
  */
 export type Options = {
+<<<<<<< HEAD
   [Prop in keyof Omit<BaseOptions, "solidityFramework" | "template" | "frontend" | "network">]: NonNullable<
+=======
+  [Prop in keyof Omit<BaseOptions, "solidityFramework" | "template" | "frontend" | "wallet" | "network">]: NonNullable<
+>>>>>>> 377484a (feat: implement npm support as pm for templates)
     BaseOptions[Prop]
   >;
 } & {

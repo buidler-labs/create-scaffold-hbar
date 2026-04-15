@@ -7,20 +7,24 @@ import type { Args } from "./types";
 import chalk from "chalk";
 import { SOLIDITY_FRAMEWORKS, EXIT_CODES } from "./utils/consts";
 import { validateFoundry, checkSystemRequirements } from "./utils/system-validation";
+import { detectPackageManager } from "./utils/detect-pm";
 
 export async function cli(args: Args) {
   try {
     renderIntroMessage();
 
-    const { errors } = await checkSystemRequirements();
+    // Parse args early to detect package manager preference for validation
+    const { rawOptions } = parseArgumentsIntoOptions(args);
+    // Use explicit package manager, or detect from lockfiles, or default to yarn
+    const preliminaryPackageManager = rawOptions.packageManager ?? detectPackageManager();
+
+    const { errors } = await checkSystemRequirements(preliminaryPackageManager);
 
     if (errors.length > 0) {
       console.log(chalk.red("\n❌ create-scaffold-hbar requirements not met:"));
       errors.forEach(error => console.log(chalk.red(`  - ${error}`)));
       process.exit(EXIT_CODES.GENERIC);
     }
-
-    const { rawOptions } = parseArgumentsIntoOptions(args);
 
     const options = await promptForMissingOptions(rawOptions);
     if (options.solidityFramework === SOLIDITY_FRAMEWORKS.FOUNDRY) {

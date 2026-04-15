@@ -1,4 +1,17 @@
+<<<<<<< HEAD
 import type { Args, SolidityFramework, RawOptions, SolidityFrameworkChoices, Network, Frontend } from "../types";
+=======
+import type {
+  Args,
+  SolidityFramework,
+  RawOptions,
+  SolidityFrameworkChoices,
+  Network,
+  Frontend,
+  Wallet,
+  PackageManager,
+} from "../types";
+>>>>>>> 377484a (feat: implement npm support as pm for templates)
 import { Command } from "commander";
 import chalk from "chalk";
 import {
@@ -8,6 +21,7 @@ import {
   FRONTENDS,
   SOLIDITY_FRAMEWORK_OPTIONS,
   NETWORKS,
+  PACKAGE_MANAGERS,
 } from "./consts";
 import { validateNpmName } from "./validate-name";
 import packageJson from "../../package.json";
@@ -23,6 +37,7 @@ const VALID_SOLIDITY_FRAMEWORKS = SOLIDITY_FRAMEWORK_OPTIONS.map(s => s.value) a
 )[];
 const VALID_NETWORKS = NETWORKS.map(n => n.value) as readonly Network[];
 const VALID_LOG_LEVELS = ["error", "warn", "info", "verbose", "debug"] as const;
+const VALID_PACKAGE_MANAGERS = PACKAGE_MANAGERS.map(p => p.value) as readonly PackageManager[];
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -67,6 +82,7 @@ export function parseArgumentsIntoOptions(rawArgs: Args): {
     .option("-f, --frontend <framework>", "Frontend framework (nextjs-app|none)")
     .option("-s, --solidity-framework <fw>", "Solidity framework (foundry|hardhat|none)")
     .option("--network <network>", "Target network (testnet|mainnet)")
+    .option("--package-manager <pm>", "Package manager (yarn|npm)")
     .option("--skip-install", "Skip dependency installation")
     .option("-y, --yes", "Accept all defaults and skip all prompts")
     .option("--ci", "CI mode: non-interactive, structured log output, no TTY color")
@@ -125,6 +141,10 @@ export function parseArgumentsIntoOptions(rawArgs: Args): {
 
   const network = opts.network ? validateEnum(opts.network as string, VALID_NETWORKS, "network") : null;
 
+  const packageManager = opts.packageManager
+    ? validateEnum(opts.packageManager as string, VALID_PACKAGE_MANAGERS, "package-manager")
+    : null;
+
   const logLevel = validateEnum(opts.logLevel as string, VALID_LOG_LEVELS, "log-level");
 
   // ── --ci implies --yes ────────────────────────────────────────────────────
@@ -147,7 +167,7 @@ export function parseArgumentsIntoOptions(rawArgs: Args): {
     template: acceptDefaults ? (template ?? DEFAULT_OPTIONS.template) : template,
     frontend,
     network: acceptDefaults ? (network ?? DEFAULT_OPTIONS.network) : network,
-    packageManager: "yarn",
+    packageManager: acceptDefaults ? (packageManager ?? DEFAULT_OPTIONS.packageManager) : (packageManager ?? null),
   };
 
   if (opts.ci) process.env.HBAR_CI = "1";
