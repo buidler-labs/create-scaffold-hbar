@@ -16,6 +16,22 @@ const NEXTJS_PACKAGE = "nextjs";
 const NPM_PACKAGE_MANAGER_VERSION = "npm@10.0.0";
 const NEXTJS_PACKAGE_JSON_PATH = path.join("packages", NEXTJS_PACKAGE, "package.json");
 const HARDHAT_PACKAGE_JSON_PATH = path.join("packages", SOLIDITY_FRAMEWORKS.HARDHAT, "package.json");
+const TEXT_FILE_EXTENSIONS = new Set([
+  ".md",
+  ".txt",
+  ".json",
+  ".js",
+  ".cjs",
+  ".mjs",
+  ".ts",
+  ".mts",
+  ".cts",
+  ".yml",
+  ".yaml",
+  ".env",
+  ".example",
+  ".rc",
+]);
 
 /**
  * Creates a .npmrc file only for npm + Foundry to keep dependencies nested.
@@ -247,6 +263,68 @@ function removeYarnSpecificFiles(targetDir: string, packageManager: PackageManag
   }
 }
 
+function replaceYarnReference(content: string): string {
+  let next = content;
+
+  // Keep URL/docs references coherent before generic command conversion.
+  next = next
+    .replace(/https:\/\/yarnpkg\.com\/?/gi, "https://www.npmjs.com/")
+    .replace(/\bYarn\b/g, "npm")
+    .replace(/\byarn\b/g, "npm");
+
+  next = next.replace(/\bnpm\s+workspace\s+(@sh\/[a-zA-Z0-9_-]+)\s+([a-zA-Z0-9:_-]+)\b/g, "npm run $2 -w $1 --");
+  next = next.replace(/\bnpm\s+install\s+--immutable\b/g, "npm install");
+  next = next.replace(/\bnpm\s+([a-zA-Z0-9:_-]+)\b/g, (match: string, scriptName: string) => {
+    if (scriptName === "run" || scriptName === "install" || scriptName === "exec" || scriptName === "ci") {
+      return match;
+    }
+    return `npm run ${scriptName}`;
+  });
+
+  return next;
+}
+
+function updateTextFilesForNpm(targetDir: string, packageManager: PackageManager): void {
+  if (packageManager !== "npm") return;
+
+  const walk = (dir: string): void => {
+    const entries = fs.readdirSync(dir, { withFileTypes: true });
+    for (const entry of entries) {
+      const fullPath = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        if (entry.name === ".git" || entry.name === "node_modules") continue;
+        walk(fullPath);
+        continue;
+      }
+
+      const ext = path.extname(entry.name);
+      if (
+        !TEXT_FILE_EXTENSIONS.has(ext) &&
+        entry.name !== ".lintstagedrc.js" &&
+        entry.name !== ".gitignore" &&
+        entry.name !== ".prettierignore"
+      ) {
+        continue;
+      }
+
+      const original = fs.readFileSync(fullPath, "utf8");
+      let updated = replaceYarnReference(original);
+      if (entry.name === ".gitignore" || entry.name === ".prettierignore") {
+        updated = updated
+          .split("\n")
+          .filter(line => !line.includes(".yarn") && !line.includes(".yarnrc") && !line.includes("yarn.lock"))
+          .filter((line, index, lines) => !(line.trim() === "# npm" && lines[index + 1]?.trim() === ""))
+          .join("\n");
+      }
+      if (updated !== original) {
+        fs.writeFileSync(fullPath, updated, "utf8");
+      }
+    }
+  };
+
+  walk(targetDir);
+}
+
 /** Script keys that reference the Next.js package; removed when frontend is "none". */
 const NEXTJS_SCRIPT_KEYS = [
   "start",
@@ -305,11 +383,13 @@ function filterRootPackageJson(
         delete scripts[key];
       }
       if (selectedFramework === SOLIDITY_FRAMEWORKS.HARDHAT) {
-        scripts["format"] = "yarn hardhat:format";
-        scripts["lint"] = "yarn hardhat:lint";
+        scripts["format"] = packageManager === "npm" ? "npm run hardhat:format" : "yarn hardhat:format";
+        scripts["lint"] = packageManager === "npm" ? "npm run hardhat:lint" : "yarn hardhat:lint";
       } else if (selectedFramework === SOLIDITY_FRAMEWORKS.FOUNDRY) {
-        scripts["format"] = "yarn workspace @sh/foundry format";
-        scripts["lint"] = "yarn workspace @sh/foundry lint";
+        scripts["format"] =
+          packageManager === "npm" ? "npm run format -w @sh/foundry --" : "yarn workspace @sh/foundry format";
+        scripts["lint"] =
+          packageManager === "npm" ? "npm run lint -w @sh/foundry --" : "yarn workspace @sh/foundry lint";
       } else {
         delete scripts["format"];
         delete scripts["lint"];
@@ -394,6 +474,7 @@ export async function copyTemplateFiles(options: Options, targetDir: string): Pr
 
     // Remove Yarn-specific files when using npm to prevent conflicts
     removeYarnSpecificFiles(targetDir, options.packageManager);
+    updateTextFilesForNpm(targetDir, options.packageManager);
 
     // Remove husky scripts from package.json when using npm (husky is yarn-specific)
     removeHuskyScripts(targetDir, options.packageManager);
