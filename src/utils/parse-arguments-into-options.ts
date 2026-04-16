@@ -1,6 +1,3 @@
-<<<<<<< HEAD
-import type { Args, SolidityFramework, RawOptions, SolidityFrameworkChoices, Network, Frontend } from "../types";
-=======
 import type {
   Args,
   SolidityFramework,
@@ -8,10 +5,8 @@ import type {
   SolidityFrameworkChoices,
   Network,
   Frontend,
-  Wallet,
   PackageManager,
 } from "../types";
->>>>>>> 377484a (feat: implement npm support as pm for templates)
 import { Command } from "commander";
 import chalk from "chalk";
 import {

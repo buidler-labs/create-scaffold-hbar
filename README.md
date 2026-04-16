@@ -11,7 +11,6 @@ create-scaffold-hbar is an interactive CLI (like `create-next-app` or `create-re
 - **Starter templates** — Blank, HTS fungible, HTS NFT, HCS DAO, or DeFi swap (template = branch name; list from GitHub API with fallback)
 - **Frontend** — Next.js (App Router)
 - **Solidity** — Hardhat or Foundry (or none)
-- **Wallets** — RainbowKit wired for Hedera
 - **Networks** — Testnet or Mainnet (Hashio RPC + Mirror Node URLs)
 - **Non-interactive** — Use `--yes` or full flags for CI and scripts
 
@@ -139,10 +138,6 @@ node /path/to/create-scaffold-hbar/bin/create-scaffold-hbar.js --yes --skip-inst
 | `-t, --template <key>`          | Built-in (`blank`, `payments-scheduler`, …) or `org/repo` |
 | `-f, --frontend <fw>`           | `nextjs-app` \| `none` (contracts only)                   |
 | `-s, --solidity-framework <fw>` | `foundry` \| `hardhat` \| `none`                          |
-<<<<<<< HEAD
-=======
-| `-w, --wallet <list>`           | `rainbowkit`                                              |
->>>>>>> 02f3785 (update the cli to support the new script naming)
 | `--network <network>`           | `testnet` \| `mainnet`                                    |
 | `--skip-install`                | Don’t run install after scaffolding                       |
 | `-y, --yes`                     | Use defaults for all prompts (non-interactive)            |

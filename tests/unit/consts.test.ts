@@ -5,6 +5,7 @@ import {
   FRONTENDS,
   SOLIDITY_FRAMEWORK_OPTIONS,
   NETWORKS,
+  PACKAGE_MANAGERS,
   BRAND_COLORS,
   DEFAULT_OPTIONS,
   EXIT_CODES,
@@ -108,8 +109,6 @@ describe("NETWORKS", () => {
   });
 });
 
-<<<<<<< HEAD
-=======
 describe("PACKAGE_MANAGERS", () => {
   it("includes yarn and npm", () => {
     const values = PACKAGE_MANAGERS.map(pm => pm.value);
@@ -122,7 +121,6 @@ describe("PACKAGE_MANAGERS", () => {
   });
 });
 
->>>>>>> 377484a (feat: implement npm support as pm for templates)
 describe("DEFAULT_OPTIONS", () => {
   it("defaults to testnet network", () => {
     expect(DEFAULT_OPTIONS.network).toBe("testnet");

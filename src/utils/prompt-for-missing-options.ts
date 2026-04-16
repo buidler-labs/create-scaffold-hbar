@@ -1,19 +1,13 @@
 import * as p from "@clack/prompts";
-<<<<<<< HEAD
-import type { Frontend, Network, Options, RawOptions, SolidityFramework } from "../types";
-import { DEFAULT_OPTIONS, EXIT_CODES, FRONTENDS, NETWORKS, SOLIDITY_FRAMEWORK_OPTIONS } from "./consts";
-=======
-import type { Frontend, Network, Options, RawOptions, SolidityFramework, Wallet, PackageManager } from "../types";
+import type { Frontend, Network, Options, RawOptions, SolidityFramework, PackageManager } from "../types";
 import {
   DEFAULT_OPTIONS,
   EXIT_CODES,
   FRONTENDS,
   NETWORKS,
   SOLIDITY_FRAMEWORK_OPTIONS,
-  WALLETS,
   PACKAGE_MANAGERS,
 } from "./consts";
->>>>>>> 377484a (feat: implement npm support as pm for templates)
 import { fetchAvailableTemplates } from "./fetch-available-templates";
 import { validateNpmName } from "./validate-name";
 import { resolveTemplateCapabilities } from "./template-capabilities";

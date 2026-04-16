@@ -165,8 +165,6 @@ describe("parseArgumentsIntoOptions", () => {
     });
   });
 
-<<<<<<< HEAD
-=======
   describe("--package-manager", () => {
     it("accepts npm", () => {
       const { rawOptions } = parseArgumentsIntoOptions(args("--package-manager", "npm"));
@@ -190,7 +188,6 @@ describe("parseArgumentsIntoOptions", () => {
     });
   });
 
->>>>>>> 377484a (feat: implement npm support as pm for templates)
   describe("--skip-install", () => {
     it("sets install to false", () => {
       const { rawOptions } = parseArgumentsIntoOptions(args("--skip-install"));
