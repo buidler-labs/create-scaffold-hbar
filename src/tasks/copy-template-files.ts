@@ -13,16 +13,24 @@ import { generateEnvExample } from "./generate-env-example";
 
 const TEMPLATE_MANIFEST_FILENAME = "template.json";
 const NEXTJS_PACKAGE = "nextjs";
+const NPM_PACKAGE_MANAGER_VERSION = "npm@10.0.0";
+const NEXTJS_PACKAGE_JSON_PATH = path.join("packages", NEXTJS_PACKAGE, "package.json");
+const HARDHAT_PACKAGE_JSON_PATH = path.join("packages", SOLIDITY_FRAMEWORKS.HARDHAT, "package.json");
 
 /**
- * Creates a .npmrc file in the target directory for npm to prevent hoisting of packages.
- * Uses install-strategy=nested to keep dependencies in local node_modules (like npm v6).
- * This ensures Foundry remappings work correctly.
+ * Creates a .npmrc file only for npm + Foundry to keep dependencies nested.
+ * Hardhat/Next.js works better with npm's default hoisted strategy because some
+ * third-party plugins rely on transitive dependency resolution.
  * @param targetDir - The target directory to create the .npmrc file in.
  * @param packageManager - The package manager to create the .npmrc file for.
+ * @param solidityFramework - Selected solidity framework from prompts.
  */
-function createNpmrcForNpm(targetDir: string, packageManager: PackageManager): void {
-  if (packageManager !== "npm") return;
+function createNpmrcForNpm(
+  targetDir: string,
+  packageManager: PackageManager,
+  solidityFramework: SolidityFramework | null | undefined,
+): void {
+  if (packageManager !== "npm" || solidityFramework !== SOLIDITY_FRAMEWORKS.FOUNDRY) return;
 
   const npmrcPath = path.join(targetDir, ".npmrc");
   // install-strategy=nested creates local node_modules in each package (npm 9.4+)
@@ -104,6 +112,44 @@ function transformScriptForPackageManager(script: string, packageManager: Packag
   });
 
   return transformed;
+}
+
+/** Normalizes scripts and packageManager metadata for npm in workspace packages. */
+function normalizeWorkspacePackagesForNpm(
+  targetDir: string,
+  selectedFramework: SolidityFramework | null | undefined,
+  frontend: Options["frontend"],
+  packageManager: PackageManager,
+): void {
+  if (packageManager !== "npm") return;
+
+  const workspacePackageJsonPaths: string[] = [];
+  if (selectedFramework === SOLIDITY_FRAMEWORKS.HARDHAT) {
+    workspacePackageJsonPaths.push(HARDHAT_PACKAGE_JSON_PATH);
+  }
+  if (frontend !== "none") {
+    workspacePackageJsonPaths.push(NEXTJS_PACKAGE_JSON_PATH);
+  }
+
+  for (const relPath of workspacePackageJsonPaths) {
+    const pkgPath = path.join(targetDir, relPath);
+    if (!fs.existsSync(pkgPath)) continue;
+
+    const pkg = JSON.parse(fs.readFileSync(pkgPath, "utf8")) as Record<string, unknown>;
+    const scripts = pkg.scripts as Record<string, string> | undefined;
+    if (scripts && typeof scripts === "object") {
+      for (const key of Object.keys(scripts)) {
+        if (typeof scripts[key] !== "string") continue;
+        scripts[key] = transformScriptForPackageManager(scripts[key], packageManager);
+
+        // In npm mode, convert yarn binary invocations to npx.
+        scripts[key] = scripts[key].replace(/\bnpm run bgipfs\b/g, "npx bgipfs");
+      }
+    }
+
+    pkg.packageManager = NPM_PACKAGE_MANAGER_VERSION;
+    fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2), "utf8");
+  }
 }
 
 /**
@@ -313,7 +359,7 @@ function filterRootPackageJson(
   // Update packageManager field to match selected package manager
   if (packageManager === "npm") {
     // Get npm version for the packageManager field
-    pkg.packageManager = "npm@10.0.0"; // Will be updated with actual version during install
+    pkg.packageManager = NPM_PACKAGE_MANAGER_VERSION; // Will be updated with actual version during install
   }
   // For yarn, keep the template's packageManager field as-is
 
@@ -343,6 +389,7 @@ export async function copyTemplateFiles(options: Options, targetDir: string): Pr
     if (options.frontend === "none") {
       removeNextjsPackage(targetDir);
     }
+    normalizeWorkspacePackagesForNpm(targetDir, options.solidityFramework, options.frontend, options.packageManager);
     filterRootPackageJson(targetDir, options.solidityFramework, options.frontend, options.packageManager);
 
     // Remove Yarn-specific files when using npm to prevent conflicts
@@ -351,7 +398,7 @@ export async function copyTemplateFiles(options: Options, targetDir: string): Pr
     // Remove husky scripts from package.json when using npm (husky is yarn-specific)
     removeHuskyScripts(targetDir, options.packageManager);
 
-    createNpmrcForNpm(targetDir, options.packageManager);
+    createNpmrcForNpm(targetDir, options.packageManager, options.solidityFramework);
 
     const outroSteps = processTemplateManifest(targetDir, options.project);
 
