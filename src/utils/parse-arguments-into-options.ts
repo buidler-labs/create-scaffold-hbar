@@ -79,6 +79,8 @@ export function parseArgumentsIntoOptions(rawArgs: Args): {
     .option("--network <network>", "Target network (testnet|mainnet)")
     .option("--package-manager <pm>", "Package manager (yarn|npm)")
     .option("--skip-install", "Skip dependency installation")
+    .option("--install-hedera-skills", "Install Hedera Skills marketplace after scaffold (default with --yes/--ci)")
+    .option("--skip-hedera-skills", "Skip Hedera Skills install (overrides default when using --yes/--ci)")
     .option("-y, --yes", "Accept all defaults and skip all prompts")
     .option("--ci", "CI mode: non-interactive, structured log output, no TTY color")
     .option("--log-level <level>", "Log verbosity (error|warn|info|verbose|debug)", "info")
@@ -145,6 +147,22 @@ export function parseArgumentsIntoOptions(rawArgs: Args): {
   // ── --ci implies --yes ────────────────────────────────────────────────────
   const acceptDefaults = Boolean(opts.yes) || Boolean(opts.ci);
 
+  const wantInstallHederaSkills = Boolean(opts.installHederaSkills);
+  const wantSkipHederaSkills = Boolean(opts.skipHederaSkills);
+  if (wantInstallHederaSkills && wantSkipHederaSkills) {
+    exitWithBadArgs("Cannot use both --install-hedera-skills and --skip-hedera-skills.");
+  }
+
+  const installHederaSkills: boolean | undefined = acceptDefaults
+    ? wantSkipHederaSkills
+      ? false
+      : true
+    : wantInstallHederaSkills
+      ? true
+      : wantSkipHederaSkills
+        ? false
+        : undefined;
+
   const solidityFrameworkChoices: SolidityFrameworkChoices = [
     SOLIDITY_FRAMEWORKS.HARDHAT,
     SOLIDITY_FRAMEWORKS.FOUNDRY,
@@ -157,6 +175,7 @@ export function parseArgumentsIntoOptions(rawArgs: Args): {
   const rawOptions: RawOptions = {
     project: acceptDefaults ? (project ?? DEFAULT_OPTIONS.project) : project,
     install: opts.skipInstall ? false : acceptDefaults ? DEFAULT_OPTIONS.install : true,
+    installHederaSkills,
     help: false, // --help is handled by commander before we reach here
     solidityFramework,
     template: acceptDefaults ? (template ?? DEFAULT_OPTIONS.template) : template,

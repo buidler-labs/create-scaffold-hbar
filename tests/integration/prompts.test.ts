@@ -97,9 +97,18 @@ describe("promptForMissingOptions", () => {
   });
 
   it("skips install prompt when install is false (--skip-install)", async () => {
-    const result = await promptForMissingOptions(makeRawOptions({ install: false }));
+    const result = await promptForMissingOptions(makeRawOptions({ install: false, installHederaSkills: false }));
     expect(result.install).toBe(false);
     expect(mockConfirm).not.toHaveBeenCalled();
+  });
+
+  it("prompts for Hedera Skills when installHederaSkills is not preset", async () => {
+    mockConfirm.mockResolvedValueOnce(false);
+    const result = await promptForMissingOptions(makeRawOptions({ project: "p", template: "blank" }));
+    expect(mockConfirm).toHaveBeenCalled();
+    const firstConfirm = mockConfirm.mock.calls[0]?.[0] as { message?: string };
+    expect(firstConfirm.message).toMatch(/Hedera Skills/i);
+    expect(result.installHederaSkills).toBe(false);
   });
 
   // ── All prompts active (no flags supplied) ───────────────────────────────
@@ -170,6 +179,7 @@ describe("promptForMissingOptions", () => {
       network: "mainnet",
       packageManager: "yarn",
       install: false,
+      installHederaSkills: false,
     });
 
     const result = await promptForMissingOptions(raw);
@@ -182,6 +192,7 @@ describe("promptForMissingOptions", () => {
       network: "mainnet",
       packageManager: "yarn",
       install: false,
+      installHederaSkills: false,
     });
 
     expect(mockText).not.toHaveBeenCalled();

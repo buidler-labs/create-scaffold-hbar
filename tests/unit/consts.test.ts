@@ -10,12 +10,19 @@ import {
   DEFAULT_OPTIONS,
   EXIT_CODES,
   HEDERA_NETWORKS,
+  HEDERA_SKILLS_ADD_NONINTERACTIVE_ARGS,
 } from "../../src/utils/consts";
 
 describe("backward-compatible constants", () => {
   it("SOLIDITY_FRAMEWORKS retains the original object shape", () => {
     expect(SOLIDITY_FRAMEWORKS.HARDHAT).toBe("hardhat");
     expect(SOLIDITY_FRAMEWORKS.FOUNDRY).toBe("foundry");
+  });
+});
+
+describe("HEDERA_SKILLS_ADD_NONINTERACTIVE_ARGS", () => {
+  it("uses --all for non-interactive skills add", () => {
+    expect(HEDERA_SKILLS_ADD_NONINTERACTIVE_ARGS).toEqual(["--all"]);
   });
 });
 
@@ -132,6 +139,10 @@ describe("DEFAULT_OPTIONS", () => {
 
   it("defaults install to true", () => {
     expect(DEFAULT_OPTIONS.install).toBe(true);
+  });
+
+  it("defaults installHederaSkills to true", () => {
+    expect(DEFAULT_OPTIONS.installHederaSkills).toBe(true);
   });
 
   it("default project name is my-hedera-dapp", () => {

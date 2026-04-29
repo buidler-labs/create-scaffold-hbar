@@ -68,6 +68,21 @@ export async function promptForMissingOptions(rawOptions: RawOptions): Promise<O
           );
         })());
 
+  let installHederaSkills: boolean;
+  if (rawOptions.installHederaSkills !== undefined) {
+    installHederaSkills = rawOptions.installHederaSkills;
+  } else if (acceptDefaults) {
+    installHederaSkills = DEFAULT_OPTIONS.installHederaSkills;
+  } else {
+    installHederaSkills = resolvePromptValue(
+      (await p.confirm({
+        message:
+          "Install Hedera Skills marketplace (agent guides for HTS, schedule service, Hiero JS, etc.) into this project?",
+        initialValue: DEFAULT_OPTIONS.installHederaSkills,
+      })) as boolean,
+    );
+  }
+
   const capabilities = await resolveTemplateCapabilities(template);
 
   let frontend: Frontend;
@@ -178,6 +193,7 @@ export async function promptForMissingOptions(rawOptions: RawOptions): Promise<O
     network,
     packageManager,
     install: Boolean(install),
+    installHederaSkills,
     solidityFramework,
   };
 }

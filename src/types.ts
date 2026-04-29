@@ -123,6 +123,11 @@ type BaseOptions = {
   project: string | null;
   /** Run `yarn install` after scaffolding. */
   install: boolean;
+  /**
+   * When set, skips the interactive confirm for Hedera Skills.
+   * Omitted means the CLI may prompt (non-`--yes` flows).
+   */
+  installHederaSkills?: boolean;
   /** Solidity / contract framework. `"none"` means contracts-only with no framework. */
   solidityFramework: SolidityFramework | "none" | null;
   /** Starter template key or `"org/repo"` community template path. */
@@ -147,14 +152,16 @@ export type RawOptions = BaseOptions & {
  * (which can legitimately be null for "none").
  */
 export type Options = {
-  [Prop in keyof Omit<BaseOptions, "solidityFramework" | "template" | "frontend" | "network">]: NonNullable<
-    BaseOptions[Prop]
-  >;
+  [Prop in keyof Omit<
+    BaseOptions,
+    "solidityFramework" | "template" | "frontend" | "network" | "installHederaSkills"
+  >]: NonNullable<BaseOptions[Prop]>;
 } & {
   solidityFramework: SolidityFramework | null;
   template: Template | (string & {});
   frontend: Frontend;
   network: Network;
+  installHederaSkills: boolean;
   /**
    * From template manifest `outro.steps` after scaffold. When set, replaces the
    * default dynamic outro section.

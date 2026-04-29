@@ -208,6 +208,7 @@ describe("parseArgumentsIntoOptions", () => {
       expect(rawOptions.frontend).toBeNull();
       expect(rawOptions.network).toBe(DEFAULT_OPTIONS.network);
       expect(rawOptions.install).toBe(DEFAULT_OPTIONS.install);
+      expect(rawOptions.installHederaSkills).toBe(DEFAULT_OPTIONS.installHederaSkills);
     });
 
     it("explicit flags win over --yes defaults", () => {
@@ -224,12 +225,46 @@ describe("parseArgumentsIntoOptions", () => {
     });
   });
 
+  describe("--install-hedera-skills / --skip-hedera-skills", () => {
+    it("leaves installHederaSkills undefined when neither flag is passed (interactive)", () => {
+      const { rawOptions } = parseArgumentsIntoOptions(args());
+      expect(rawOptions.installHederaSkills).toBeUndefined();
+    });
+
+    it("sets installHederaSkills true with --install-hedera-skills", () => {
+      const { rawOptions } = parseArgumentsIntoOptions(args("--install-hedera-skills"));
+      expect(rawOptions.installHederaSkills).toBe(true);
+    });
+
+    it("sets installHederaSkills false with --skip-hedera-skills", () => {
+      const { rawOptions } = parseArgumentsIntoOptions(args("--skip-hedera-skills"));
+      expect(rawOptions.installHederaSkills).toBe(false);
+    });
+
+    it("exits BAD_ARGS when both flags are passed", () => {
+      expect(() => parseArgumentsIntoOptions(args("--install-hedera-skills", "--skip-hedera-skills"))).toThrow(
+        `process.exit(${EXIT_CODES.BAD_ARGS})`,
+      );
+    });
+
+    it("with --yes, install-hedera-skills remains true (default)", () => {
+      const { rawOptions } = parseArgumentsIntoOptions(args("--yes", "--install-hedera-skills"));
+      expect(rawOptions.installHederaSkills).toBe(true);
+    });
+
+    it("with --yes alone, installHederaSkills defaults to true", () => {
+      const { rawOptions } = parseArgumentsIntoOptions(args("--yes", "--skip-install"));
+      expect(rawOptions.installHederaSkills).toBe(true);
+    });
+  });
+
   describe("--ci", () => {
     it("implies --yes: applies all defaults", () => {
       const { rawOptions } = parseArgumentsIntoOptions(args("--ci"));
       expect(rawOptions.project).toBe(DEFAULT_OPTIONS.project);
       expect(rawOptions.template).toBe(DEFAULT_OPTIONS.template);
       expect(rawOptions.network).toBe(DEFAULT_OPTIONS.network);
+      expect(rawOptions.installHederaSkills).toBe(true);
     });
 
     it("sets HBAR_CI env var to '1'", () => {

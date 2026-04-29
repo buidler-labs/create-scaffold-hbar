@@ -4,6 +4,7 @@ import {
   createFirstGitCommit,
   prettierFormat,
   installPackages,
+  installHederaSkillsMarketplace,
 } from "./tasks";
 import type { Options } from "./types";
 import { renderOutroMessage } from "./utils/render-outro-message";
@@ -40,6 +41,15 @@ export async function createProject(options: Options) {
           }
           return false;
         },
+        rendererOptions: {
+          outputBar: 8,
+          persistentOutput: false,
+        },
+      },
+      {
+        title: "📚 Installing Hedera Skills (agent marketplace)",
+        task: (_, task) => installHederaSkillsMarketplace(targetDirectory, task),
+        skip: () => (!options.installHederaSkills ? "Skipped — install Hedera Skills was not selected" : false),
         rendererOptions: {
           outputBar: 8,
           persistentOutput: false,

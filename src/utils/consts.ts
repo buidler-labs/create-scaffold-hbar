@@ -93,6 +93,15 @@ export const BRAND_COLORS = {
   warningAmber: "#F59E0B",
 } as const;
 
+/** GitHub spec passed to `npx skills add` for the Hedera marketplace. */
+export const HEDERA_SKILLS_MARKETPLACE_SPEC = "hedera-dev/hedera-skills";
+
+/**
+ * Flags appended to `skills add` so install runs without TTY prompts (Listr/stdin is not interactive).
+ * `--all` = `--skill '*' --agent '*' -y` per `npx skills --help`.
+ */
+export const HEDERA_SKILLS_ADD_NONINTERACTIVE_ARGS = ["--all"] as const;
+
 /** Defaults applied when the user passes --yes or --ci to skip all prompts. */
 export const DEFAULT_OPTIONS = {
   project: "my-hedera-dapp",
@@ -101,6 +110,7 @@ export const DEFAULT_OPTIONS = {
   network: "testnet",
   packageManager: "yarn" as const, // "yarn" or "npm"
   install: true,
+  installHederaSkills: true,
   solidityFramework: "foundry",
 } as const;
 
