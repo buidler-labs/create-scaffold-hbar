@@ -1,12 +1,17 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { expandOutroPlaceholders, renderOutroMessage } from "../../src/utils/render-outro-message";
 import type { Options } from "../../src/types";
-import { SOLIDITY_FRAMEWORKS } from "../../src/utils/consts";
+import {
+  HEDERA_SKILLS_ADD_NONINTERACTIVE_ARGS,
+  HEDERA_SKILLS_MARKETPLACE_SPEC,
+  SOLIDITY_FRAMEWORKS,
+} from "../../src/utils/consts";
 
 function baseOptions(overrides: Partial<Options> = {}): Options {
   return {
     project: "my-app",
     install: true,
+    installHederaSkills: false,
     solidityFramework: SOLIDITY_FRAMEWORKS.FOUNDRY,
     template: "blank",
     frontend: "nextjs-app",
@@ -41,6 +46,17 @@ describe("renderOutroMessage", () => {
     const text = log.mock.calls.map(c => c.join("")).join("\n");
     expect(text).toContain("Run locally:");
     expect(text).toContain("Deploy to Hedera testnet:");
+    expect(text).toContain("Optional: Hedera agent skills");
+    expect(text).toContain(
+      `npx skills add ${HEDERA_SKILLS_MARKETPLACE_SPEC} ${HEDERA_SKILLS_ADD_NONINTERACTIVE_ARGS.join(" ")}`,
+    );
+  });
+
+  it("omits Hedera Skills tip when marketplace was installed during scaffold", () => {
+    const log = vi.spyOn(console, "log").mockImplementation(() => {});
+    renderOutroMessage(baseOptions({ installHederaSkills: true }));
+    const text = log.mock.calls.map(c => c.join("")).join("\n");
+    expect(text).not.toContain("Optional: Hedera agent skills");
   });
 
   it("renders template outro steps instead of default body", () => {

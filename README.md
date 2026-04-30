@@ -13,6 +13,7 @@ create-scaffold-hbar is an interactive CLI (like `create-next-app` or `create-re
 - **Solidity** — Hardhat or Foundry (or none)
 - **Networks** — Testnet or Mainnet (Hashio RPC + Mirror Node URLs)
 - **Non-interactive** — Use `--yes` or full flags for CI and scripts
+- **Hedera Skills (on by default)** — Interactive prompt (default yes) or `--yes` / `--ci` installs the marketplace unless you pass `--skip-hedera-skills`; runs `npx skills add hedera-dev/hedera-skills --all` ([repo](https://github.com/hedera-dev/hedera-skills))
 
 ---
 
@@ -63,6 +64,12 @@ To skip installing dependencies (e.g. to install yourself later):
 
 ```bash
 npx create-scaffold-hbar@latest --yes --skip-install
+```
+
+With `--yes` or `--ci`, Hedera Skills are **installed by default** (same non-interactive `npx skills add hedera-dev/hedera-skills --all` step). To skip them:
+
+```bash
+npx create-scaffold-hbar@latest --yes --skip-hedera-skills
 ```
 
 ---
@@ -131,19 +138,21 @@ node /path/to/create-scaffold-hbar/bin/create-scaffold-hbar.js --yes --skip-inst
 
 ## CLI options
 
-| Option                          | Description                                               |
-| ------------------------------- | --------------------------------------------------------- |
-| `[project-name]`                | Project directory name (or use `--destination`)           |
-| `-d, --destination <path>`      | Output path instead of positional name                    |
-| `-t, --template <key>`          | Built-in (`blank`, `payments-scheduler`, …) or `org/repo` |
-| `-f, --frontend <fw>`           | `nextjs-app` \| `none` (contracts only)                   |
-| `-s, --solidity-framework <fw>` | `foundry` \| `hardhat` \| `none`                          |
-| `--network <network>`           | `testnet` \| `mainnet`                                    |
-| `--skip-install`                | Don’t run install after scaffolding                       |
-| `-y, --yes`                     | Use defaults for all prompts (non-interactive)            |
-| `--ci`                          | CI mode (implies `--yes`, structured output)              |
-| `-h, --help`                    | Show help                                                 |
-| `-v, --version`                 | Show version                                              |
+| Option                          | Description                                                                                          |
+| ------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `[project-name]`                | Project directory name (or use `--destination`)                                                      |
+| `-d, --destination <path>`      | Output path instead of positional name                                                               |
+| `-t, --template <key>`          | Built-in (`blank`, `payments-scheduler`, …) or `org/repo`                                            |
+| `-f, --frontend <fw>`           | `nextjs-app` \| `none` (contracts only)                                                              |
+| `-s, --solidity-framework <fw>` | `foundry` \| `hardhat` \| `none`                                                                     |
+| `--network <network>`           | `testnet` \| `mainnet`                                                                               |
+| `--skip-install`                | Don’t run install after scaffolding                                                                  |
+| `--install-hedera-skills`       | Install Hedera Skills (`npx skills add … --all`); default with `--yes` unless `--skip-hedera-skills` |
+| `--skip-hedera-skills`          | Do not install Hedera Skills (cannot combine with `--install-hedera-skills`)                         |
+| `-y, --yes`                     | Use defaults for all prompts (non-interactive)                                                       |
+| `--ci`                          | CI mode (implies `--yes`, structured output)                                                         |
+| `-h, --help`                    | Show help                                                                                            |
+| `-v, --version`                 | Show version                                                                                         |
 
 ---
 

@@ -1,6 +1,6 @@
 import type { Options } from "../types";
 import chalk from "chalk";
-import { SOLIDITY_FRAMEWORKS } from "./consts";
+import { HEDERA_SKILLS_ADD_NONINTERACTIVE_ARGS, HEDERA_SKILLS_MARKETPLACE_SPEC, SOLIDITY_FRAMEWORKS } from "./consts";
 
 /** Expands `{run:script}` placeholders (e.g. `{run:next:start}` → `yarn next:start` or `npm run next:start`). */
 export function expandOutroPlaceholders(line: string, run: (script: string) => string): string {
@@ -89,6 +89,13 @@ export function renderOutroMessage(options: Options) {
     message += `
   ${chalk.bold("Install dependencies & format files")}
     ${installAndFormat}
+`;
+  }
+
+  if (!options.installHederaSkills) {
+    message += `
+  ${chalk.bold("Optional: Hedera agent skills")}
+    ${chalk.dim("Add the official marketplace for Cursor / Claude Code (non-interactive):")} ${chalk.cyan(`npx skills add ${HEDERA_SKILLS_MARKETPLACE_SPEC} ${HEDERA_SKILLS_ADD_NONINTERACTIVE_ARGS.join(" ")}`)}
 `;
   }
 
