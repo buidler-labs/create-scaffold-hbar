@@ -4,7 +4,7 @@ import chalk from "chalk";
 import type { PackageManager } from "../types";
 import { InstallError } from "../utils/errors";
 
-const INSTALL_ARGS: Record<PackageManager, string[]> = {
+const INSTALL_ARGS: Record<Exclude<PackageManager, "none">, string[]> = {
   yarn: ["install"],
   // Use --legacy-peer-deps to handle peer dependency conflicts common in Hedera ecosystem packages
   npm: ["install", "--legacy-peer-deps"],
@@ -34,6 +34,11 @@ export async function installPackages(
   task: ListrTaskWrapper<any, typeof DefaultRenderer, typeof SimpleRenderer>,
   packageManager: PackageManager,
 ): Promise<void> {
+  if (packageManager === "none") {
+    task.output = chalk.yellow("Template-managed package manager selected. Install step skipped.");
+    return;
+  }
+
   const available = await isPackageManagerAvailable(packageManager);
   if (!available) {
     const cmd = getInstallCommand(packageManager);

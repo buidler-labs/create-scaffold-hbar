@@ -1,4 +1,4 @@
-import type { Frontend, SolidityFramework, TemplateManifest } from "../types";
+import type { Frontend, PackageManager, SolidityFramework, TemplateManifest } from "../types";
 import { TemplateManifestSchema } from "../types";
 import { TEMPLATE_CAPABILITIES_FALLBACK, TEMPLATE_REPO } from "./consts";
 import { parseGithubCommunityTemplate } from "./parse-github-template-ref";
@@ -8,15 +8,18 @@ const BLANK_TEMPLATE_BRANCH = "blank-template";
 export type TemplateCapabilities = {
   frontend: Frontend[];
   solidityFramework: Array<SolidityFramework | "none">;
+  packageManager: PackageManager[];
   defaults: {
     frontend?: Frontend;
     solidityFramework?: SolidityFramework | "none";
+    packageManager?: PackageManager;
   };
 };
 
 const DEFAULT_CAPABILITIES: TemplateCapabilities = {
   frontend: ["nextjs-app", "none"],
   solidityFramework: ["foundry", "hardhat", "none"],
+  packageManager: ["yarn", "npm"],
   defaults: {},
 };
 
@@ -32,9 +35,11 @@ function fromManifest(manifest: TemplateManifest): TemplateCapabilities | null {
   return {
     frontend: capabilities?.frontend ?? DEFAULT_CAPABILITIES.frontend,
     solidityFramework: capabilities?.solidityFramework ?? DEFAULT_CAPABILITIES.solidityFramework,
+    packageManager: capabilities?.packageManager ?? DEFAULT_CAPABILITIES.packageManager,
     defaults: {
       frontend: defaults?.frontend,
       solidityFramework: defaults?.solidityFramework,
+      packageManager: defaults?.packageManager,
     },
   };
 }
@@ -45,9 +50,11 @@ function fromFallback(template: string): TemplateCapabilities {
   return {
     frontend: fallback.frontend ?? DEFAULT_CAPABILITIES.frontend,
     solidityFramework: fallback.solidityFramework ?? DEFAULT_CAPABILITIES.solidityFramework,
+    packageManager: fallback.packageManager ?? DEFAULT_CAPABILITIES.packageManager,
     defaults: {
       frontend: fallback.defaults?.frontend,
       solidityFramework: fallback.defaults?.solidityFramework,
+      packageManager: fallback.defaults?.packageManager,
     },
   };
 }

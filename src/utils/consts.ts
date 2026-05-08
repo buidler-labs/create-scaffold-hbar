@@ -29,25 +29,30 @@ export const TEMPLATE_CAPABILITIES_FALLBACK: Record<
   {
     frontend?: Array<"nextjs-app" | "none">;
     solidityFramework?: Array<"foundry" | "hardhat" | "none">;
+    packageManager?: Array<"yarn" | "npm" | "none">;
     defaults?: {
       frontend?: "nextjs-app" | "none";
       solidityFramework?: "foundry" | "hardhat" | "none";
+      packageManager?: "yarn" | "npm" | "none";
     };
   }
 > = {
   blank: {
     frontend: ["nextjs-app"],
     solidityFramework: ["foundry", "hardhat"],
+    packageManager: ["yarn", "npm"],
     defaults: { frontend: "nextjs-app", solidityFramework: "foundry" },
   },
   "payments-scheduler": {
     frontend: ["nextjs-app"],
     solidityFramework: ["foundry"],
+    packageManager: ["yarn", "npm"],
     defaults: { frontend: "nextjs-app", solidityFramework: "foundry" },
   },
   "hedera-demo": {
     frontend: ["nextjs-app"],
     solidityFramework: ["none"],
+    packageManager: ["yarn", "npm"],
     defaults: { frontend: "nextjs-app", solidityFramework: "none" },
   },
 };
@@ -79,6 +84,7 @@ export const NETWORKS = [
 export const PACKAGE_MANAGERS = [
   { value: "yarn", label: "Yarn", hint: "recommended" },
   { value: "npm", label: "Npm" },
+  { value: "none", label: "Template-managed (skip install)" },
 ] as const;
 
 /** Hedera brand palette used for terminal output styling. */

@@ -14,10 +14,12 @@ describe("resolveTemplateCapabilities", () => {
         capabilities: {
           frontend: ["nextjs-app"],
           solidityFramework: ["none"],
+          packageManager: ["none"],
         },
         defaults: {
           frontend: "nextjs-app",
           solidityFramework: "none",
+          packageManager: "none",
         },
       },
     };
@@ -39,7 +41,8 @@ describe("resolveTemplateCapabilities", () => {
     );
     expect(caps.frontend).toEqual(["nextjs-app"]);
     expect(caps.solidityFramework).toEqual(["none"]);
-    expect(caps.defaults).toEqual({ frontend: "nextjs-app", solidityFramework: "none" });
+    expect(caps.packageManager).toEqual(["none"]);
+    expect(caps.defaults).toEqual({ frontend: "nextjs-app", solidityFramework: "none", packageManager: "none" });
   });
 
   it("falls back to default capabilities when community fetch fails", async () => {

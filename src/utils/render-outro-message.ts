@@ -25,11 +25,23 @@ function getRunCommand(packageManager: Options["packageManager"], script: string
     // npm requires `--` separator to forward arguments through script chains
     return hasArgs ? `npm run ${script} --` : `npm run ${script}`;
   }
+  if (packageManager === "none") {
+    return `pnpm ${script}`;
+  }
   return `yarn ${script}`;
 }
 
 /** Generates the install and format command based on package manager. */
-function getInstallAndFormatCommand(packageManager: Options["packageManager"]): string {
+function getInstallAndFormatCommand(
+  packageManager: Options["packageManager"],
+  overrideInstallCommand?: string,
+): string {
+  if (overrideInstallCommand) {
+    return chalk.cyan(overrideInstallCommand);
+  }
+  if (packageManager === "none") {
+    return chalk.cyan("See template README for install command");
+  }
   if (packageManager === "npm") {
     // Use --legacy-peer-deps to handle peer dependency conflicts in Hedera packages
     return `${chalk.cyan("npm install --legacy-peer-deps")} && ${chalk.cyan("npm run format")}`;
@@ -72,7 +84,7 @@ function wrapText(text: string, maxWidth: number = 80): string {
 
 export function renderOutroMessage(options: Options) {
   const run = (script: string) => getRunCommand(options.packageManager, script);
-  const installAndFormat = getInstallAndFormatCommand(options.packageManager);
+  const installAndFormat = getInstallAndFormatCommand(options.packageManager, options.outroInstallCommand);
   const frameworkPrefix = options.solidityFramework ? `${options.solidityFramework}:` : "";
   const contractScript = (script: string) => `${frameworkPrefix}${script}`;
   const frontendStartScript = "next:start";

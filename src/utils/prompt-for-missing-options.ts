@@ -84,6 +84,7 @@ export async function promptForMissingOptions(rawOptions: RawOptions): Promise<O
   }
 
   const capabilities = await resolveTemplateCapabilities(template);
+  const packageManagerCapabilities = capabilities.packageManager ?? ["yarn", "npm"];
 
   let frontend: Frontend;
   if (rawOptions.frontend != null) {
@@ -151,40 +152,56 @@ export async function promptForMissingOptions(rawOptions: RawOptions): Promise<O
           })) as Network,
         ));
 
-  const install =
-    rawOptions.install === false
-      ? false
-      : rawOptions.install === true
-        ? true
-        : acceptDefaults
-          ? DEFAULT_OPTIONS.install
-          : resolvePromptValue(
-              (await p.confirm({
-                message: "Install dependencies after scaffolding?",
-                initialValue: DEFAULT_OPTIONS.install,
-              })) as boolean,
-            );
+  let packageManager: PackageManager;
+  if (rawOptions.packageManager != null) {
+    if (!packageManagerCapabilities.includes(rawOptions.packageManager)) {
+      throw new ValidationError(
+        `Template "${template}" does not support package manager "${rawOptions.packageManager}". Allowed: ${packageManagerCapabilities.join(", ")}`,
+      );
+    }
+    packageManager = rawOptions.packageManager;
+  } else if (packageManagerCapabilities.length === 1) {
+    packageManager = packageManagerCapabilities[0];
+  } else if (acceptDefaults) {
+    packageManager = capabilities.defaults.packageManager ?? DEFAULT_OPTIONS.packageManager;
+  } else {
+    const detected = detectPackageManager();
+    const initialValue = packageManagerCapabilities.includes(detected) ? detected : packageManagerCapabilities[0];
+    packageManager = resolvePromptValue(
+      (await p.select({
+        message: "Which package manager?",
+        options: PACKAGE_MANAGERS.filter(pm => packageManagerCapabilities.includes(pm.value as PackageManager)).map(
+          pm => {
+            const option: { value: PackageManager; label: string; hint?: string } = {
+              value: pm.value,
+              label: pm.label,
+            };
+            if ("hint" in pm && pm.hint) {
+              option.hint = pm.hint;
+            }
+            return option;
+          },
+        ),
+        initialValue: initialValue as PackageManager,
+      })) as PackageManager,
+    );
+  }
 
-  const packageManager: PackageManager =
-    rawOptions.packageManager ??
-    (acceptDefaults
-      ? DEFAULT_OPTIONS.packageManager
-      : resolvePromptValue(
-          (await p.select({
-            message: "Which package manager?",
-            options: PACKAGE_MANAGERS.map(pm => {
-              const option: { value: PackageManager; label: string; hint?: string } = {
-                value: pm.value,
-                label: pm.label,
-              };
-              if ("hint" in pm && pm.hint) {
-                option.hint = pm.hint;
-              }
-              return option;
-            }),
-            initialValue: detectPackageManager(),
-          })) as PackageManager,
-        ));
+  const install =
+    packageManager === "none"
+      ? false
+      : rawOptions.install === false
+        ? false
+        : rawOptions.install === true
+          ? true
+          : acceptDefaults
+            ? DEFAULT_OPTIONS.install
+            : resolvePromptValue(
+                (await p.confirm({
+                  message: "Install dependencies after scaffolding?",
+                  initialValue: DEFAULT_OPTIONS.install,
+                })) as boolean,
+              );
 
   return {
     project,

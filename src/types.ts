@@ -2,8 +2,8 @@ import { z } from "zod";
 
 export type Args = string[];
 
-/** Package manager for the generated project. Supports yarn and npm. */
-export type PackageManager = "yarn" | "npm";
+/** Package manager for the generated project. "none" = template-managed install flow. */
+export type PackageManager = "yarn" | "npm" | "none";
 
 /** Hedera network targets. */
 export type Network = "testnet" | "mainnet";
@@ -41,20 +41,28 @@ const TemplateCapabilitiesSchema = z.object({
   frontend: z.array(z.enum(["nextjs-app", "none"])).optional(),
   /** Allowed solidity framework options for this template. */
   solidityFramework: z.array(z.enum(["hardhat", "foundry", "none"])).optional(),
+  /** Allowed package manager options for this template. */
+  packageManager: z.array(z.enum(["yarn", "npm", "none"])).optional(),
 });
 
 const TemplateDefaultsSchema = z.object({
   frontend: z.enum(["nextjs-app", "none"]).optional(),
   solidityFramework: z.enum(["hardhat", "foundry", "none"]).optional(),
+  packageManager: z.enum(["yarn", "npm", "none"]).optional(),
 });
 
 const TemplateOutroSchema = z.object({
   /**
    * Replaces the default contract/frontend-specific outro body (between the shared
    * header and footer). One string per line. Leading `+` renders bold.
-   * Use `{run:script}` for the yarn command (e.g. `{run:next:start}` → `yarn next:start`).
+   * Use `{run:script}` for the selected package manager command.
    */
   steps: z.array(z.string().min(1)).min(1),
+  /**
+   * Optional override for the shared install hint shown when `--skip-install` is used.
+   * Example: `pnpm install`
+   */
+  installCommand: z.string().min(1).optional(),
 });
 
 const TemplateManifestBlockSchema = z.object({
@@ -167,6 +175,11 @@ export type Options = {
    * default dynamic outro section.
    */
   outroSteps?: string[];
+  /**
+   * Optional install command override from template manifest `outro.installCommand`.
+   * Used to keep shared outro text in sync with templates that prefer pnpm.
+   */
+  outroInstallCommand?: string;
 };
 
 /** Describes a single `.template.` file found during template processing. */

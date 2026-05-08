@@ -176,12 +176,17 @@ describe("parseArgumentsIntoOptions", () => {
       expect(rawOptions.packageManager).toBe("yarn");
     });
 
+    it("accepts none", () => {
+      const { rawOptions } = parseArgumentsIntoOptions(args("--package-manager", "none"));
+      expect(rawOptions.packageManager).toBe("none");
+    });
+
     it("defaults to null when flag is absent", () => {
       const { rawOptions } = parseArgumentsIntoOptions(args());
       expect(rawOptions.packageManager).toBeNull();
     });
 
-    it("exits BAD_ARGS on invalid package manager value", () => {
+    it("exits BAD_ARGS on unsupported package manager value", () => {
       expect(() => parseArgumentsIntoOptions(args("--package-manager", "pnpm"))).toThrow(
         `process.exit(${EXIT_CODES.BAD_ARGS})`,
       );

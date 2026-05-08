@@ -150,9 +150,12 @@ function normalizeWorkspacePackagesForNpm(
  * If template.json exists in project root, parse it, run rename and env
  * generation, then remove the manifest file.
  *
- * @returns Custom outro steps from `outro.steps` when present; otherwise undefined.
+ * @returns Custom outro metadata from template.json when present.
  */
-function processTemplateManifest(projectDir: string, projectName: string): string[] | undefined {
+function processTemplateManifest(
+  projectDir: string,
+  projectName: string,
+): { outroSteps?: string[]; outroInstallCommand?: string } | undefined {
   const manifestPath = path.join(projectDir, TEMPLATE_MANIFEST_FILENAME);
   if (!fs.existsSync(manifestPath)) return undefined;
 
@@ -161,6 +164,7 @@ function processTemplateManifest(projectDir: string, projectName: string): strin
   const createScaffoldHbar = manifest["create-scaffold-hbar"];
 
   const outroSteps = createScaffoldHbar?.outro?.steps;
+  const outroInstallCommand = createScaffoldHbar?.outro?.installCommand;
 
   if (createScaffoldHbar?.rename) {
     applyRenameMap(projectDir, createScaffoldHbar.rename, projectName);
@@ -170,7 +174,11 @@ function processTemplateManifest(projectDir: string, projectName: string): strin
   }
 
   fs.unlinkSync(manifestPath);
-  return outroSteps?.length ? [...outroSteps] : undefined;
+
+  const result: { outroSteps?: string[]; outroInstallCommand?: string } = {};
+  if (outroSteps?.length) result.outroSteps = [...outroSteps];
+  if (outroInstallCommand?.trim()) result.outroInstallCommand = outroInstallCommand.trim();
+  return Object.keys(result).length > 0 ? result : undefined;
 }
 
 /**
@@ -429,7 +437,10 @@ function filterRootPackageJson(
  * dir, copies contents into targetDir, removes the unselected solidity framework
  * package(s), updates root package.json, runs manifest post-processing, and inits git.
  */
-export async function copyTemplateFiles(options: Options, targetDir: string): Promise<{ outroSteps?: string[] }> {
+export async function copyTemplateFiles(
+  options: Options,
+  targetDir: string,
+): Promise<{ outroSteps?: string[]; outroInstallCommand?: string }> {
   const spec = getTemplateSpec(options.template as string);
   const tmpDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), "create-scaffold-hbar-"));
 
@@ -457,12 +468,12 @@ export async function copyTemplateFiles(options: Options, targetDir: string): Pr
     // Remove husky scripts from package.json when using npm (husky is yarn-specific)
     removeHuskyScripts(targetDir, options.packageManager);
 
-    const outroSteps = processTemplateManifest(targetDir, options.project);
+    const outro = processTemplateManifest(targetDir, options.project);
 
     await execa("git", ["init"], { cwd: targetDir });
     await execa("git", ["checkout", "-b", "main"], { cwd: targetDir });
 
-    return outroSteps?.length ? { outroSteps } : {};
+    return outro ?? {};
   } finally {
     await fs.promises.rm(tmpDir, { recursive: true, force: true });
   }

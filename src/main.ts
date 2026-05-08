@@ -18,6 +18,7 @@ export async function createProject(options: Options) {
 
   const targetDirectory = path.resolve(process.cwd(), options.project);
   let outroSteps: string[] | undefined;
+  let outroInstallCommand: string | undefined;
 
   const tasks = new Listr(
     [
@@ -28,14 +29,21 @@ export async function createProject(options: Options) {
       {
         title: `🚀 Creating a new Scaffold-HBAR app in ${chalk.green.bold(options.project)}`,
         task: async () => {
-          const { outroSteps: steps } = await copyTemplateFiles(options, targetDirectory);
+          const { outroSteps: steps, outroInstallCommand: installCommand } = await copyTemplateFiles(
+            options,
+            targetDirectory,
+          );
           outroSteps = steps;
+          outroInstallCommand = installCommand;
         },
       },
       {
         title: `📦 Installing dependencies with ${options.packageManager}, this could take a while`,
         task: (_, task) => installPackages(targetDirectory, task, options.packageManager),
         skip: () => {
+          if (options.packageManager === "none") {
+            return "Skipped — this template manages dependency installation outside create-scaffold-hbar";
+          }
           if (!options.install) {
             return "Manually skipped, since `--skip-install` flag was passed";
           }
@@ -74,5 +82,7 @@ export async function createProject(options: Options) {
   );
 
   await tasks.run();
-  renderOutroMessage(outroSteps?.length ? { ...options, outroSteps } : options);
+  renderOutroMessage(
+    outroSteps?.length || outroInstallCommand ? { ...options, outroSteps, outroInstallCommand } : options,
+  );
 }

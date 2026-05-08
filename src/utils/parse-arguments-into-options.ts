@@ -181,7 +181,8 @@ export function parseArgumentsIntoOptions(rawArgs: Args): {
     template: acceptDefaults ? (template ?? DEFAULT_OPTIONS.template) : template,
     frontend,
     network: acceptDefaults ? (network ?? DEFAULT_OPTIONS.network) : network,
-    packageManager: acceptDefaults ? (packageManager ?? DEFAULT_OPTIONS.packageManager) : (packageManager ?? null),
+    // Keep null here so template capabilities can decide the package manager later.
+    packageManager: packageManager ?? null,
   };
 
   if (opts.ci) process.env.HBAR_CI = "1";
