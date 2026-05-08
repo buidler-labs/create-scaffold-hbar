@@ -182,7 +182,7 @@ export async function promptForMissingOptions(rawOptions: RawOptions): Promise<O
             return option;
           },
         ),
-        initialValue: initialValue as PackageManager,
+        initialValue: initialValue,
       })) as PackageManager,
     );
   }
