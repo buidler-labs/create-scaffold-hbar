@@ -60,6 +60,10 @@ describe("isValidPackageManager", () => {
     expect(isValidPackageManager("npm")).toBe(true);
   });
 
+  it("returns true for 'none'", () => {
+    expect(isValidPackageManager("none")).toBe(true);
+  });
+
   it("returns false for invalid package managers", () => {
     expect(isValidPackageManager("pnpm")).toBe(false);
     expect(isValidPackageManager("bun")).toBe(false);

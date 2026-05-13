@@ -29,5 +29,5 @@ export function detectPackageManager(): PackageManager {
  * Validates if a string is a supported package manager.
  */
 export function isValidPackageManager(pm: string): pm is PackageManager {
-  return pm === "yarn" || pm === "npm";
+  return pm === "yarn" || pm === "npm" || pm === "none";
 }

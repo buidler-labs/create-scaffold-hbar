@@ -83,6 +83,15 @@ describe("renderOutroMessage", () => {
     expect(text).not.toContain("yarn foundry:chain");
   });
 
+  it("uses pnpm with run -- when packageManager is none and deploy appends flags", () => {
+    const log = vi.spyOn(console, "log").mockImplementation(() => {});
+    renderOutroMessage(baseOptions({ packageManager: "none" }));
+    const text = log.mock.calls.map(c => c.join("")).join("\n");
+    expect(text).toContain("pnpm foundry:chain");
+    expect(text).toContain("pnpm run foundry:deploy -- --network");
+    expect(text).not.toContain("yarn foundry:chain");
+  });
+
   it("shows npm install instructions when install is skipped", () => {
     const log = vi.spyOn(console, "log").mockImplementation(() => {});
     renderOutroMessage(baseOptions({ install: false, packageManager: "npm" }));

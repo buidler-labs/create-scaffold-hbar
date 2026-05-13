@@ -51,19 +51,23 @@ const TemplateDefaultsSchema = z.object({
   packageManager: z.enum(["yarn", "npm", "none"]).optional(),
 });
 
-const TemplateOutroSchema = z.object({
-  /**
-   * Replaces the default contract/frontend-specific outro body (between the shared
-   * header and footer). One string per line. Leading `+` renders bold.
-   * Use `{run:script}` for the selected package manager command.
-   */
-  steps: z.array(z.string().min(1)).min(1),
-  /**
-   * Optional override for the shared install hint shown when `--skip-install` is used.
-   * Example: `pnpm install`
-   */
-  installCommand: z.string().min(1).optional(),
-});
+const TemplateOutroSchema = z
+  .object({
+    /**
+     * Replaces the default contract/frontend-specific outro body (between the shared
+     * header and footer). One string per line. Leading `+` renders bold.
+     * Use `{run:script}` for the selected package manager command.
+     */
+    steps: z.array(z.string().min(1)).min(1).optional(),
+    /**
+     * Optional override for the shared install hint shown when `--skip-install` is used.
+     * Example: `pnpm install`
+     */
+    installCommand: z.string().min(1).optional(),
+  })
+  .refine(outro => outro.steps !== undefined || outro.installCommand !== undefined, {
+    message: "Template outro must define at least one of 'steps' or 'installCommand'.",
+  });
 
 const TemplateManifestBlockSchema = z.object({
   /**

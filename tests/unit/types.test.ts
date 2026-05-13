@@ -79,6 +79,19 @@ describe("TemplateManifestSchema", () => {
       expect(result.data["create-scaffold-hbar"]?.outro?.steps).toEqual(["+Start the frontend: {run:next:start}"]);
     });
 
+    it("accepts outro.installCommand without steps (install hint only)", () => {
+      const result = TemplateManifestSchema.safeParse({
+        name: "pnpm-template",
+        "create-scaffold-hbar": {
+          outro: { installCommand: "pnpm install" },
+        },
+      });
+      expect(result.success).toBe(true);
+      if (!result.success) return;
+      expect(result.data["create-scaffold-hbar"]?.outro?.steps).toBeUndefined();
+      expect(result.data["create-scaffold-hbar"]?.outro?.installCommand).toBe("pnpm install");
+    });
+
     it("preserves rename entry structure on parse", () => {
       const result = TemplateManifestSchema.safeParse(fullManifest);
       expect(result.success).toBe(true);
@@ -139,6 +152,16 @@ describe("TemplateManifestSchema", () => {
           rename: {
             Placeholder: { to: "", paths: ["contracts"] },
           },
+        },
+      });
+      expect(result.success).toBe(false);
+    });
+
+    it("rejects an outro block with neither steps nor installCommand", () => {
+      const result = TemplateManifestSchema.safeParse({
+        name: "test",
+        "create-scaffold-hbar": {
+          outro: {},
         },
       });
       expect(result.success).toBe(false);

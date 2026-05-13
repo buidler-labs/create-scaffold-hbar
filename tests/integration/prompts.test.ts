@@ -1,6 +1,8 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { DEFAULT_OPTIONS, EXIT_CODES } from "../../src/utils/consts";
 import type { RawOptions } from "../../src/types";
+import { ValidationError } from "../../src/utils/errors";
+import type { TemplateCapabilities } from "../../src/utils/template-capabilities";
 
 // ─── Mock @clack/prompts ─────────────────────────────────────────────────────
 // Track which prompts were actually invoked so we can assert that pre-supplied
@@ -22,12 +24,19 @@ vi.mock("@clack/prompts", () => ({
   log: { info: vi.fn(), success: vi.fn(), warn: vi.fn(), error: vi.fn(), message: vi.fn(), step: vi.fn() },
 }));
 
+const defaultTemplateCapabilities: TemplateCapabilities = {
+  frontend: ["nextjs-app", "none"],
+  solidityFramework: ["foundry", "hardhat", "none"],
+  packageManager: ["yarn", "npm"],
+  defaults: { frontend: "nextjs-app", solidityFramework: "foundry", packageManager: DEFAULT_OPTIONS.packageManager },
+};
+
+const { mockResolveTemplateCapabilities } = vi.hoisted(() => ({
+  mockResolveTemplateCapabilities: vi.fn(),
+}));
+
 vi.mock("../../src/utils/template-capabilities", () => ({
-  resolveTemplateCapabilities: vi.fn().mockResolvedValue({
-    frontend: ["nextjs-app", "none"],
-    solidityFramework: ["foundry", "hardhat", "none"],
-    defaults: { frontend: "nextjs-app", solidityFramework: "foundry" },
-  }),
+  resolveTemplateCapabilities: mockResolveTemplateCapabilities,
 }));
 
 // ─── Import the function under test AFTER mocks are registered ───────────────
@@ -52,6 +61,7 @@ function makeRawOptions(overrides: Partial<RawOptions> = {}): RawOptions {
 describe("promptForMissingOptions", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockResolveTemplateCapabilities.mockResolvedValue(defaultTemplateCapabilities);
     // Default mock return values simulate user accepting defaults
     mockText.mockResolvedValue(DEFAULT_OPTIONS.project);
     mockSelect.mockImplementation((opts: { initialValue?: unknown }) => Promise.resolve(opts.initialValue));
@@ -91,9 +101,82 @@ describe("promptForMissingOptions", () => {
     expect(result.network).toBe("mainnet");
   });
 
-  it("always uses yarn as package manager", async () => {
-    const result = await promptForMissingOptions(makeRawOptions());
+  it("defaults to yarn when CLI package manager is unset and defaults are accepted", async () => {
+    process.env.HBAR_ACCEPT_DEFAULTS = "1";
+    const result = await promptForMissingOptions(makeRawOptions({ packageManager: null, installHederaSkills: false }));
     expect(result.packageManager).toBe("yarn");
+  });
+
+  it("auto-selects packageManager none without a prompt when template only supports none", async () => {
+    mockResolveTemplateCapabilities.mockResolvedValue({
+      frontend: ["nextjs-app"],
+      solidityFramework: ["foundry"],
+      packageManager: ["none"],
+      defaults: {
+        frontend: "nextjs-app",
+        solidityFramework: "foundry",
+        packageManager: "none",
+      },
+    });
+
+    const result = await promptForMissingOptions(
+      makeRawOptions({
+        project: "pnpm-only-app",
+        template: "acme/template-managed#branch",
+        frontend: "nextjs-app",
+        solidityFramework: "foundry",
+        network: "testnet",
+        packageManager: null,
+        installHederaSkills: false,
+        install: true,
+      }),
+    );
+
+    expect(result.packageManager).toBe("none");
+    expect(result.install).toBe(false);
+    expect(
+      mockSelect.mock.calls.some(
+        c => typeof c[0] === "object" && (c[0] as { message?: string }).message === "Which package manager?",
+      ),
+    ).toBe(false);
+    expect(
+      mockConfirm.mock.calls.some(
+        c =>
+          typeof c[0] === "object" &&
+          (c[0] as { message?: string }).message?.includes("Install dependencies after scaffolding"),
+      ),
+    ).toBe(false);
+  });
+
+  it("rejects a CLI package manager that the template does not support", async () => {
+    mockResolveTemplateCapabilities.mockResolvedValue({
+      frontend: ["nextjs-app"],
+      solidityFramework: ["foundry"],
+      packageManager: ["none"],
+      defaults: {
+        frontend: "nextjs-app",
+        solidityFramework: "foundry",
+        packageManager: "none",
+      },
+    });
+
+    const raw = makeRawOptions({
+      project: "p",
+      template: "acme/template-managed#branch",
+      frontend: "nextjs-app",
+      solidityFramework: "foundry",
+      network: "testnet",
+      packageManager: "yarn",
+      installHederaSkills: false,
+    });
+
+    try {
+      await promptForMissingOptions(raw);
+      expect.fail("expected promise to reject with ValidationError");
+    } catch (e) {
+      expect(e).toBeInstanceOf(ValidationError);
+      expect((e as Error).message).toMatch(/does not support package manager/);
+    }
   });
 
   it("skips install prompt when install is false (--skip-install)", async () => {

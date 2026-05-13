@@ -18,7 +18,7 @@ function formatOutroLine(line: string): string {
 }
 
 /** Generates the run command based on package manager.
- * @param hasArgs - Whether additional arguments will be passed. If true for npm, adds `--` separator.
+ * @param hasArgs - When true, suffix with `--` so appended args reach the script (npm and pnpm).
  */
 function getRunCommand(packageManager: Options["packageManager"], script: string, hasArgs: boolean = false): string {
   if (packageManager === "npm") {
@@ -26,7 +26,8 @@ function getRunCommand(packageManager: Options["packageManager"], script: string
     return hasArgs ? `npm run ${script} --` : `npm run ${script}`;
   }
   if (packageManager === "none") {
-    return `pnpm ${script}`;
+    // pnpm forwards extra argv after `pnpm run <script> --` (parity with npm)
+    return hasArgs ? `pnpm run ${script} --` : `pnpm ${script}`;
   }
   return `yarn ${script}`;
 }
@@ -126,7 +127,7 @@ export function renderOutroMessage(options: Options) {
     options.solidityFramework === SOLIDITY_FRAMEWORKS.HARDHAT ||
     options.solidityFramework === SOLIDITY_FRAMEWORKS.FOUNDRY
   ) {
-    // For npm, use hasArgs=true when the command will be followed by arguments (needs `--` separator)
+    // npm and template "none" (pnpm) require `--` before forwarded script args
     const chainCmd = run(contractScript("chain"));
     const deployCmd = getRunCommand(options.packageManager, contractScript("deploy"), true);
     const testCmd = run(contractScript("test"));

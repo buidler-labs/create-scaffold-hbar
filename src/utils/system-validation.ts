@@ -54,7 +54,8 @@ export const validateFoundry = async () => {
   }
 };
 
-export const checkSystemRequirements = async (packageManager: PackageManager = "yarn") => {
+/** Node.js + Git checks that every scaffold path needs. */
+export const checkCoreSystemRequirements = async (): Promise<{ errors: string[] }> => {
   const errors: string[] = [];
 
   try {
@@ -65,31 +66,6 @@ export const checkSystemRequirements = async (packageManager: PackageManager = "
     }
   } catch {
     errors.push("Node.js is not installed. Please install Node.js >= 20.18.3");
-  }
-
-  // Validate package manager based on selection
-  if (packageManager === "yarn") {
-    try {
-      const { stdout: yarnVersion } = await execa("yarn", ["--version"]);
-      if (semver.lt(yarnVersion, "1.0.0")) {
-        errors.push(
-          `Yarn version should be >= 1.0.0. Recommended version is >= 2.0.0. Current version: ${yarnVersion}`,
-        );
-      }
-    } catch {
-      errors.push("Yarn is not installed. Please install Yarn >= 1.0.0. Recommended version is >= 2.0.0");
-    }
-  } else if (packageManager === "npm") {
-    try {
-      const { stdout: npmVersion } = await execa("npm", ["--version"]);
-      if (semver.lt(npmVersion, REQUIRED_NPM_VERSION)) {
-        errors.push(
-          `npm version must be >= ${REQUIRED_NPM_VERSION} for workspaces support. Current version: ${npmVersion}`,
-        );
-      }
-    } catch {
-      errors.push(`npm is not installed. Please install npm >= ${REQUIRED_NPM_VERSION}`);
-    }
   }
 
   try {
@@ -113,4 +89,49 @@ export const checkSystemRequirements = async (packageManager: PackageManager = "
   }
 
   return { errors };
+};
+
+/** Ensures the selected package manager CLI is present and new enough. Omit when `packageManager` is `"none"`. */
+export const checkPackageManagerToolchain = async (
+  packageManager: Exclude<PackageManager, "none">,
+): Promise<{ errors: string[] }> => {
+  const errors: string[] = [];
+
+  if (packageManager === "yarn") {
+    try {
+      const { stdout: yarnVersion } = await execa("yarn", ["--version"]);
+      if (semver.lt(yarnVersion, "1.0.0")) {
+        errors.push(
+          `Yarn version should be >= 1.0.0. Recommended version is >= 2.0.0. Current version: ${yarnVersion}`,
+        );
+      }
+    } catch {
+      errors.push("Yarn is not installed. Please install Yarn >= 1.0.0. Recommended version is >= 2.0.0");
+    }
+  } else {
+    try {
+      const { stdout: npmVersion } = await execa("npm", ["--version"]);
+      if (semver.lt(npmVersion, REQUIRED_NPM_VERSION)) {
+        errors.push(
+          `npm version must be >= ${REQUIRED_NPM_VERSION} for workspaces support. Current version: ${npmVersion}`,
+        );
+      }
+    } catch {
+      errors.push(`npm is not installed. Please install npm >= ${REQUIRED_NPM_VERSION}`);
+    }
+  }
+
+  return { errors };
+};
+
+/** Core + optional Yarn/npm checks. For `"none"`, only core requirements run. */
+export const checkSystemRequirements = async (
+  packageManager: PackageManager = "yarn",
+): Promise<{ errors: string[] }> => {
+  const core = await checkCoreSystemRequirements();
+  if (packageManager === "none") {
+    return core;
+  }
+  const pm = await checkPackageManagerToolchain(packageManager);
+  return { errors: [...core.errors, ...pm.errors] };
 };

@@ -77,7 +77,7 @@ export function parseArgumentsIntoOptions(rawArgs: Args): {
     .option("-f, --frontend <framework>", "Frontend framework (nextjs-app|none)")
     .option("-s, --solidity-framework <fw>", "Solidity framework (foundry|hardhat|none)")
     .option("--network <network>", "Target network (testnet|mainnet)")
-    .option("--package-manager <pm>", "Package manager (yarn|npm)")
+    .option("--package-manager <pm>", "Package manager (yarn|npm|none)")
     .option("--skip-install", "Skip dependency installation")
     .option("--install-hedera-skills", "Install Hedera Skills marketplace after scaffold (default with --yes/--ci)")
     .option("--skip-hedera-skills", "Skip Hedera Skills install (overrides default when using --yes/--ci)")
